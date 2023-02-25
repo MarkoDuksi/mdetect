@@ -20,35 +20,47 @@ namespace cimg = cimg_library;
 #define CHANNELS_3 3
 #define CHANNELS_1 1
 
-static uint8_t memory_pool[3 * SIZE_1024x768] = { 0 };
-static uint8_t* background = memory_pool;
-static uint8_t* img_curr = &memory_pool[SIZE_1024x768];
-static uint8_t* img_diff = &memory_pool[2 * SIZE_1024x768];
-
-void update_diff() {
+void update_diff(uint8_t* background, uint8_t* img_curr, uint8_t* img_diff) {
     for (size_t i = 0; i < SIZE_1024x768; ++i) {
         img_diff[i] = std::abs(img_curr[i] - background[i]);
     }
 }
 
+void update_background(uint8_t*& background, uint8_t*& img_curr) {
+    std::swap(background, img_curr);
+}
+
 int main() {
+    // multi-purpose memory block
+    uint8_t stack_memory_pool[3 * SIZE_1024x768] = { 0 };
+    uint8_t* background = stack_memory_pool;
+    uint8_t* img_curr = &stack_memory_pool[SIZE_1024x768];
+    uint8_t* img_diff = &stack_memory_pool[2 * SIZE_1024x768];
+
+    // filenames from ./captures into sorted std::vector<std::string>
     std::vector<std::string> dir_content;
     for (const auto& entry : std::filesystem::directory_iterator("./captures")) {
         dir_content.push_back(entry.path().string());
     }
     std::sort(dir_content.begin(), dir_content.end());
 
+    // image containers and main diplay
     cimg::CImg<uint8_t> img_rgb(WIDTH_1024, HEIGHT_768, DEPTH_1, CHANNELS_3);
     cimg::CImg<uint8_t> img_greyscale(WIDTH_1024, HEIGHT_768, DEPTH_1, CHANNELS_1);
     cimg::CImgDisplay disp;
 
     for (const auto& filename : dir_content) {
         img_rgb.assign(filename.c_str());
-        memcpy(img_curr, img_rgb._data + SIZE_1024x768, SIZE_1024x768); // copy only the green channel
-        update_diff();
+
+        // copy only the green channel
+        memcpy(img_curr, img_rgb._data + SIZE_1024x768, SIZE_1024x768);
+
+        update_diff(background, img_curr, img_diff);
+
         img_greyscale.assign(img_diff, WIDTH_1024, HEIGHT_768);
         disp = img_greyscale;
-        std::swap(background, img_curr);
+
+        update_background(background, img_curr);
         // disp.wait(100);
     }
 
