@@ -20,14 +20,14 @@ namespace cimg = cimg_library;
 #define CHANNELS_3 3
 #define CHANNELS_1 1
 
-static uint8_t img_buff[2][SIZE_1024x768] = { 0 };
-static uint8_t bg_index = 0;
-static uint8_t img_index = 1;
-static uint8_t img_diff_buff[SIZE_1024x768];
+static uint8_t memory_pool[3 * SIZE_1024x768] = { 0 };
+static uint8_t* background = memory_pool;
+static uint8_t* img_curr = &memory_pool[SIZE_1024x768];
+static uint8_t* img_diff = &memory_pool[2 * SIZE_1024x768];
 
 void update_diff() {
     for (size_t i = 0; i < SIZE_1024x768; ++i) {
-        img_diff_buff[i] = std::abs(img_buff[img_index][i] - img_buff[bg_index][i]);
+        img_diff[i] = std::abs(img_curr[i] - background[i]);
     }
 }
 
@@ -42,14 +42,13 @@ int main() {
     cimg::CImg<uint8_t> img_greyscale(WIDTH_1024, HEIGHT_768, DEPTH_1, CHANNELS_1);
     cimg::CImgDisplay disp;
 
-
     for (const auto& filename : dir_content) {
         img_rgb.assign(filename.c_str());
-        memcpy(img_buff[img_index], img_rgb._data + SIZE_1024x768, SIZE_1024x768); // copy only green channel
+        memcpy(img_curr, img_rgb._data + SIZE_1024x768, SIZE_1024x768); // copy only the green channel
         update_diff();
-        img_greyscale.assign(img_diff_buff, WIDTH_1024, HEIGHT_768);
+        img_greyscale.assign(img_diff, WIDTH_1024, HEIGHT_768);
         disp = img_greyscale;
-        std::swap(bg_index, img_index);
+        std::swap(background, img_curr);
         // disp.wait(100);
     }
 
