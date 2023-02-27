@@ -62,13 +62,22 @@ float stamp(const uint8_t *image, const size_t image_width, size_t idx, const Ke
     return accumulator * kernel.weight + kernel.bias;
 }
 
-void downscale(uint8_t* src_image, uint8_t* dst_image, const size_t src_width, const size_t src_height, const size_t downscaling_factor) {
+void convolve(uint8_t* src_image, uint8_t* dst_image, const size_t src_width, const size_t src_height, const Kernel& kernel, const size_t stride) {
     size_t src_idx = 0;
     size_t dst_idx = 0;
 
-    const size_t &stride = downscaling_factor;
     const size_t next_row_offset = (stride - 1) * src_width;
 
+    for (size_t i = 0; i < src_height; i += stride) {
+        for (size_t j = 0; j < src_width; j += stride) {
+            dst_image[dst_idx++] = (uint8_t)stamp(src_image, src_width, src_idx, kernel);
+            src_idx += stride;
+        }
+        src_idx += next_row_offset;
+    }
+
+}
+void downscale(uint8_t* src_image, uint8_t* dst_image, const size_t src_width, const size_t src_height, const size_t downscaling_factor) {
     // const float kernel_elements[] = {
     //     1.0f, 1.0f,
     //     1.0f, 1.0f
@@ -81,17 +90,9 @@ void downscale(uint8_t* src_image, uint8_t* dst_image, const size_t src_width, c
         1.0f, 1.0f, 1.0f, 1.0f,
         1.0f, 1.0f, 1.0f, 1.0f
     };
-    const Kernel average_pooling_kernel(kernel_elements, 4, 4, 0, 0, 1.0f/16.0f, 0);
+    const Kernel avg_kernel(kernel_elements, 4, 4, 0, 0, 1.0f/16.0f, 0);
 
-    for (size_t i = 0; i < src_height; i += stride) {
-        for (size_t j = 0; j < src_width; j += stride) {
-            // std::cout << "dst_idx: " << dst_idx << std::endl;
-            // std::cout << "src_idx: " << src_idx << std::endl << std::endl;
-            dst_image[dst_idx++] = (uint8_t)stamp(src_image, src_width, src_idx, average_pooling_kernel);
-            src_idx += stride;
-        }
-        src_idx += next_row_offset;
-    }
+    convolve(src_image, dst_image, src_width, src_height, avg_kernel, 4);
 }
 
 void absdiff(uint8_t* image1, uint8_t* image2, uint8_t* diff, const size_t width, const size_t height) {
@@ -106,7 +107,7 @@ void update_background(uint8_t*& background, uint8_t*& img_curr) {
 }
 
 void threshold(uint8_t* src_image, uint8_t* dst_image, const size_t width, const size_t height, const uint8_t threshold) {
-    size_t size = width * height;
+    const size_t size = width * height;
 
     for (size_t i = 0; i < size; ++i) {
         dst_image[i] = src_image[i] < threshold ? 0 : 255;
