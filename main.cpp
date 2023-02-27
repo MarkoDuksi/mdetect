@@ -106,7 +106,11 @@ void update_background(uint8_t*& background, uint8_t*& img_curr) {
 }
 
 void threshold(uint8_t* src_image, uint8_t* dst_image, const size_t width, const size_t height, const uint8_t threshold) {
+    size_t size = width * height;
 
+    for (size_t i = 0; i < size; ++i) {
+        dst_image[i] = src_image[i] < threshold ? 0 : 255;
+    }
 }
 
 void errode(const uint8_t* src_image, uint8_t* dst_image, const size_t width, const size_t height) {
@@ -145,6 +149,7 @@ int main() {
 
         downscale(img_curr, img_curr, WIDTH_1024, HEIGHT_768, 4);
         absdiff(background, img_curr, img_diff, WIDTH_256, HEIGHT_192);
+        threshold(img_diff, img_diff, WIDTH_256, HEIGHT_192, 150);
         update_background(background, img_curr);
 
         img_greyscale.assign(img_diff, WIDTH_256, HEIGHT_192);
