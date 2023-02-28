@@ -23,34 +23,31 @@ namespace cimg = cimg_library;
 #define DEPTH_1 1
 #define CHANNELS_3 3
 #define CHANNELS_1 1
+#define THRESHOLD_150 150
 
 
 struct Kernel {
     const float* elements;
     const size_t width, height;
     const size_t anchor_X, anchor_Y;
-    const float weight, bias;
 
     Kernel(const float* elements, const size_t width, const size_t height, 
-           const size_t anchor_X = 0, const size_t anchor_Y = 0,
-           const float weight = 1.0f, const float bias = 0.0f) :
+           const size_t anchor_X = 0, const size_t anchor_Y = 0) :
         elements(elements),
         width(width),
         height(height),
         anchor_X(anchor_X),
-        anchor_Y(anchor_Y),
-        weight(weight),
-        bias(bias)
+        anchor_Y(anchor_Y)
         {}
 };
 
 // helper func: one-time apply kernel over the neighbourhood of image[idx] (no bounds checking)
-float stamp(const uint8_t *image, const size_t image_width, size_t idx, const Kernel& kernel){
+float stamp(const uint8_t *image, const size_t img_width, size_t idx, const Kernel& kernel){
     size_t kernel_idx = 0;
     float accumulator = 0;
 
-    const size_t start_offset = kernel.anchor_Y * image_width + kernel.anchor_X;
-    const size_t next_row_offset = image_width - kernel.width;
+    const size_t start_offset = kernel.anchor_Y * img_width + kernel.anchor_X;
+    const size_t next_row_offset = img_width - kernel.width;
 
     idx -= start_offset;
     for (size_t i = 0; i < kernel.height; ++i) {
@@ -59,46 +56,42 @@ float stamp(const uint8_t *image, const size_t image_width, size_t idx, const Ke
         }
         idx += next_row_offset;
     }
-    return accumulator * kernel.weight + kernel.bias;
+    return accumulator;
 }
 
-void convolve(uint8_t* src_image, uint8_t* dst_image, const size_t src_width, const size_t src_height, const Kernel& kernel, const size_t stride) {
-    size_t src_idx = 0;
+void convolve(const uint8_t* src_image, uint8_t* dst_image, const size_t img_width, const size_t img_height, const Kernel& kernel, const size_t stride, float (*scaler)(float)) {
+    size_t src_idx = img_width * kernel.anchor_Y + kernel.anchor_X;
     size_t dst_idx = 0;
 
-    const size_t next_row_offset = (stride - 1) * src_width;
+    const size_t next_row_offset = (stride - 1) * img_width;
 
-    for (size_t i = 0; i < src_height; i += stride) {
-        for (size_t j = 0; j < src_width; j += stride) {
-            dst_image[dst_idx++] = (uint8_t)stamp(src_image, src_width, src_idx, kernel);
+    for (size_t i = 0; i < img_height; i += stride) {
+        for (size_t j = 0; j < img_width; j += stride) {
+            dst_image[dst_idx++] = scaler(stamp(src_image, img_width, src_idx, kernel));
             src_idx += stride;
         }
         src_idx += next_row_offset;
     }
-
 }
-void downscale(uint8_t* src_image, uint8_t* dst_image, const size_t src_width, const size_t src_height, const size_t downscaling_factor) {
-    // const float kernel_elements[] = {
-    //     1.0f, 1.0f,
-    //     1.0f, 1.0f
-    // };
-    // const Kernel average_pooling_kernel(kernel_elements, 2, 2, 0, 0, 1.0f/4.0f, 0);
 
+void downscale(const uint8_t* src_image, uint8_t* dst_image, const size_t src_width, const size_t src_height) {
     const float kernel_elements[] = {
         1.0f, 1.0f, 1.0f, 1.0f,
         1.0f, 1.0f, 1.0f, 1.0f,
         1.0f, 1.0f, 1.0f, 1.0f,
         1.0f, 1.0f, 1.0f, 1.0f
     };
-    const Kernel avg_kernel(kernel_elements, 4, 4, 0, 0, 1.0f/16.0f, 0);
+    const Kernel avg_kernel(kernel_elements, 4, 4, 0, 0);
+    const size_t stride = 4;
+    auto scaler = [] (float x) { return x / 16.0f; };
 
-    convolve(src_image, dst_image, src_width, src_height, avg_kernel, 4);
+    convolve(src_image, dst_image, src_width, src_height, avg_kernel, stride, scaler);
 }
 
-void absdiff(uint8_t* image1, uint8_t* image2, uint8_t* diff, const size_t width, const size_t height) {
-    size_t size = width * height;
+void absdiff(const uint8_t* image1, const uint8_t* image2, uint8_t* abs_diff, const size_t img_width, const size_t img_height) {
+    const size_t size = img_width * img_height;
     for (size_t i = 0; i < size; ++i) {
-        diff[i] = abs(image1[i] - image2[i]);
+        abs_diff[i] = abs(image1[i] - image2[i]);
     }
 }
 
@@ -106,15 +99,15 @@ void update_background(uint8_t*& background, uint8_t*& img_curr) {
     std::swap(background, img_curr);
 }
 
-void threshold(uint8_t* src_image, uint8_t* dst_image, const size_t width, const size_t height, const uint8_t threshold) {
-    const size_t size = width * height;
+void threshold(const uint8_t* src_image, uint8_t* dst_image, const size_t img_width, const size_t img_height, const uint8_t threshold) {
+    const size_t size = img_width * img_height;
 
     for (size_t i = 0; i < size; ++i) {
         dst_image[i] = src_image[i] < threshold ? 0 : 255;
     }
 }
 
-void errode(const uint8_t* src_image, uint8_t* dst_image, const size_t width, const size_t height) {
+void erode(const uint8_t* src_image, uint8_t* dst_image, const size_t img_width, const size_t img_height) {
 
 }
 
@@ -148,9 +141,10 @@ int main() {
         // copy only the green channel
         memcpy(img_curr, img_rgb._data + SIZE_1024x768, SIZE_1024x768);
 
-        downscale(img_curr, img_curr, WIDTH_1024, HEIGHT_768, 4);
+        downscale(img_curr, img_curr, WIDTH_1024, HEIGHT_768);
         absdiff(background, img_curr, img_diff, WIDTH_256, HEIGHT_192);
-        threshold(img_diff, img_diff, WIDTH_256, HEIGHT_192, 150);
+        threshold(img_diff, img_diff, WIDTH_256, HEIGHT_192, THRESHOLD_150);
+        // erode(img_diff, img_eroded, WIDTH_256, HEIGHT_192);
         update_background(background, img_curr);
 
         img_greyscale.assign(img_diff, WIDTH_256, HEIGHT_192);
