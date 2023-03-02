@@ -130,21 +130,150 @@ void threshold(const uint8_t* src_image, uint8_t* dst_image, const size_t img_si
     }
 }
 
-void erode(const uint8_t* src_image, uint8_t* dst_image, const size_t img_width, const size_t img_height) {
+// void dilate2(const uint8_t* src_image, uint8_t* dst_image, const size_t src_width, const size_t src_height) {
+//     const float kernel_elements[] = {
+//         0.0f, 1.0f, 0.0f,
+//         1.0f, 1.0f, 1.0f,
+//         0.0f, 1.0f, 0.0f
+//     };
+//     const Kernel diamond_kernel(kernel_elements, 3, 3, 1, 1);
+//     const size_t stride = 1;
+//     auto normalizer = [](float res) { return !res ? 0.0f : 255.0f; };
 
+//     convolve(src_image, dst_image, src_width, src_height, diamond_kernel, stride, normalizer);
+// }
+
+// void dilate4(const uint8_t* src_image, uint8_t* dst_image, const size_t src_width, const size_t src_height) {
+//     const float kernel_elements[] = {
+//         0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+//         0.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+//         1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+//         0.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+//         0.0f, 0.0f, 1.0f, 0.0f, 0.0f
+//     };
+//     const Kernel diamond_kernel(kernel_elements, 5, 5, 2, 2);
+//     const size_t stride = 1;
+//     auto normalizer = [](float res) { return !res ? 0.0f : 255.0f; };
+
+//     convolve(src_image, dst_image, src_width, src_height, diamond_kernel, stride, normalizer);
+// }
+
+// void dilate6(const uint8_t* src_image, uint8_t* dst_image, const size_t src_width, const size_t src_height) {
+//     const float kernel_elements[] = {
+//         0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+//         0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+//         1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+//         1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+//         1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+//         0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+//         0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f
+//     };
+//     const Kernel octagon_kernel(kernel_elements, 7, 7, 3, 3);
+//     const size_t stride = 1;
+//     auto normalizer = [](float res) { return !res ? 0.0f : 255.0f; };
+
+//     convolve(src_image, dst_image, src_width, src_height, octagon_kernel, stride, normalizer);
+// }
+
+// void dilate8(const uint8_t* src_image, uint8_t* dst_image, const size_t src_width, const size_t src_height) {
+//     const float kernel_elements[] = {
+//         0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+//         0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+//         0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+//         1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+//         1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+//         1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+//         0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+//         0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+//         0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f
+//     };
+//     const Kernel diamond_kernel(kernel_elements, 9, 9, 4, 4);
+//     const size_t stride = 1;
+//     auto normalizer = [](float res) { return !res ? 0.0f : 255.0f; };
+
+//     convolve(src_image, dst_image, src_width, src_height, diamond_kernel, stride, normalizer);
+// }
+
+// void dilate10(const uint8_t* src_image, uint8_t* dst_image, const size_t src_width, const size_t src_height) {
+//     const float kernel_elements[] = {
+//         0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+//         0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+//         0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+//         0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+//         1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+//         1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+//         1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+//         0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+//         0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+//         0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+//         0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f
+//     };
+//     const Kernel round_kernel(kernel_elements, 11, 11, 5, 5);
+//     const size_t stride = 1;
+//     auto normalizer = [](float res) { return !res ? 0.0f : 255.0f; };
+
+//     convolve(src_image, dst_image, src_width, src_height, round_kernel, stride, normalizer);
+// }
+
+void dilate(const uint8_t* src_image, uint8_t* dst_image, const size_t src_width, const size_t src_height) {
+    const float kernel_elements[] = {
+        0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0,
+        0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
+        0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+        0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+        0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+        0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+        0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+        0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
+        0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0
+    };
+    const Kernel round_kernel(kernel_elements, 13, 13, 6, 6);
+    const size_t stride = 1;
+    auto normalizer = [](float res) { return !res ? 0.0f : 255.0f; };
+
+    convolve(src_image, dst_image, src_width, src_height, round_kernel, stride, normalizer);
 }
 
-void dilate(const uint8_t* src_image, uint8_t* dst_image, const size_t width, const size_t height) {
+void erode(const uint8_t* src_image, uint8_t* dst_image, const size_t src_width, const size_t src_height) {
+    const float kernel_elements[] = {
+        0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0,
+        0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
+        0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+        0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+        0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+        0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+        0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+        0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
+        0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0
+    };
+    const Kernel round_kernel(kernel_elements, 13, 13, 6, 6);
+    const size_t stride = 1;
+    auto normalizer = [](float res) { return res < 30600.0f ? 0.0f : 255.0f; };
 
+    convolve(src_image, dst_image, src_width, src_height, round_kernel, stride, normalizer);
 }
-
 
 int main() {
-    // multi-purpose stack memory
-    uint8_t memory_pool[3 * SIZE_1024x768] = { 0 };
-    uint8_t* background = memory_pool;
-    uint8_t* img_curr = &memory_pool[SIZE_1024x768];
-    uint8_t* img_diff = &memory_pool[2 * SIZE_1024x768];
+    uint8_t* img_input;
+    uint8_t img_downscaled[SIZE_256x192];
+    uint8_t img_background[SIZE_256x192] = { 0 };
+    uint8_t img_diff[SIZE_256x192];
+    uint8_t img_binarized[SIZE_256x192];
+    // uint8_t img_dilated2[SIZE_254x190];
+    // uint8_t img_dilated4[SIZE_252x188];
+    // uint8_t img_dilated6[SIZE_250x186];
+    // uint8_t img_dilated8[SIZE_248x184];
+    // uint8_t img_dilated10[SIZE_246x182];
+    uint8_t img_dilated[SIZE_244x180];
+    uint8_t img_eroded[SIZE_232x168];
 
     // filenames from 'captures/' into sorted std::vector<std::string>
     std::vector<std::string> dir_content;
@@ -153,25 +282,47 @@ int main() {
     }
     std::sort(dir_content.begin(), dir_content.end());
 
-    // image containers and main diplay
     cimg::CImg<uint8_t> img_rgb;
-    cimg::CImg<uint8_t> img_greyscale;
-    cimg::CImgDisplay disp;
+    cimg::CImg<uint8_t> img1;
+    // cimg::CImg<uint8_t> img2;
+    // cimg::CImg<uint8_t> img3;
+    cimg::CImg<uint8_t> img4;
+    cimg::CImgDisplay disp1;
+    // cimg::CImgDisplay disp2;
+    // cimg::CImgDisplay disp3;
+    cimg::CImgDisplay disp4;
 
     for (const auto& filename : dir_content) {
         img_rgb.assign(filename.c_str());
 
-        // copy only the green channel
-        memcpy(img_curr, img_rgb._data + SIZE_1024x768, SIZE_1024x768);
+        // point to the green channel
+        img_input = &img_rgb._data[SIZE_1024x768];
 
-        downscale(img_curr, img_curr, WIDTH_1024, HEIGHT_768);
-        absdiff(background, img_curr, img_diff, WIDTH_256, HEIGHT_192);
-        threshold(img_diff, img_diff, WIDTH_256, HEIGHT_192, THRESHOLD_150);
-        // erode(img_diff, img_eroded, WIDTH_256, HEIGHT_192);
-        update_background(background, img_curr);
+        downscale(img_input, img_downscaled, WIDTH_1024, HEIGHT_768);
+        absdiff(img_downscaled, img_background, img_diff, SIZE_256x192);
+        threshold(img_diff, img_binarized, SIZE_256x192, THRESHOLD_127);
+        // dilate2(img_binarized, img_dilated2, WIDTH_256, HEIGHT_192);
+        // dilate4(img_binarized, img_dilated4, WIDTH_256, HEIGHT_192);
+        // dilate6(img_binarized, img_dilated6, WIDTH_256, HEIGHT_192);
+        // dilate8(img_binarized, img_dilated8, WIDTH_256, HEIGHT_192);
+        dilate(img_binarized, img_dilated, WIDTH_256, HEIGHT_192);
+        erode(img_dilated, img_eroded, WIDTH_244, HEIGHT_180);
 
-        img_greyscale.assign(img_diff, WIDTH_256, HEIGHT_192);
-        disp = img_greyscale;
+        update_background(img_downscaled, img_background, SIZE_256x192);
+
+        img1.assign(img_downscaled, WIDTH_256, HEIGHT_192);
+        // img2.assign(img_diff, WIDTH_256, HEIGHT_192);
+        // img3.assign(img_binarized, WIDTH_256, HEIGHT_192);
+        // img4.assign(img_dilated2, WIDTH_254, HEIGHT_190);
+        // img4.assign(img_dilated6, WIDTH_250, HEIGHT_186);
+        // img4.assign(img_dilated8, WIDTH_248, HEIGHT_184);
+        img4.assign(img_eroded, WIDTH_232, HEIGHT_168);
+
+        disp1 = img1;
+        // disp2 = img2;
+        // disp3 = img3;
+        disp4 = img4;
+
         // disp.wait(100);
     }
 
