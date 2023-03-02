@@ -130,91 +130,6 @@ void threshold(const uint8_t* src_image, uint8_t* dst_image, const size_t img_si
     }
 }
 
-// void dilate2(const uint8_t* src_image, uint8_t* dst_image, const size_t src_width, const size_t src_height) {
-//     const float kernel_elements[] = {
-//         0.0f, 1.0f, 0.0f,
-//         1.0f, 1.0f, 1.0f,
-//         0.0f, 1.0f, 0.0f
-//     };
-//     const Kernel diamond_kernel(kernel_elements, 3, 3, 1, 1);
-//     const size_t stride = 1;
-//     auto normalizer = [](float res) { return !res ? 0.0f : 255.0f; };
-
-//     convolve(src_image, dst_image, src_width, src_height, diamond_kernel, stride, normalizer);
-// }
-
-// void dilate4(const uint8_t* src_image, uint8_t* dst_image, const size_t src_width, const size_t src_height) {
-//     const float kernel_elements[] = {
-//         0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-//         0.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-//         1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-//         0.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-//         0.0f, 0.0f, 1.0f, 0.0f, 0.0f
-//     };
-//     const Kernel diamond_kernel(kernel_elements, 5, 5, 2, 2);
-//     const size_t stride = 1;
-//     auto normalizer = [](float res) { return !res ? 0.0f : 255.0f; };
-
-//     convolve(src_image, dst_image, src_width, src_height, diamond_kernel, stride, normalizer);
-// }
-
-// void dilate6(const uint8_t* src_image, uint8_t* dst_image, const size_t src_width, const size_t src_height) {
-//     const float kernel_elements[] = {
-//         0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-//         0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-//         1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-//         1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-//         1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-//         0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-//         0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f
-//     };
-//     const Kernel octagon_kernel(kernel_elements, 7, 7, 3, 3);
-//     const size_t stride = 1;
-//     auto normalizer = [](float res) { return !res ? 0.0f : 255.0f; };
-
-//     convolve(src_image, dst_image, src_width, src_height, octagon_kernel, stride, normalizer);
-// }
-
-// void dilate8(const uint8_t* src_image, uint8_t* dst_image, const size_t src_width, const size_t src_height) {
-//     const float kernel_elements[] = {
-//         0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-//         0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-//         0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-//         1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-//         1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-//         1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-//         0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-//         0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-//         0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f
-//     };
-//     const Kernel diamond_kernel(kernel_elements, 9, 9, 4, 4);
-//     const size_t stride = 1;
-//     auto normalizer = [](float res) { return !res ? 0.0f : 255.0f; };
-
-//     convolve(src_image, dst_image, src_width, src_height, diamond_kernel, stride, normalizer);
-// }
-
-// void dilate10(const uint8_t* src_image, uint8_t* dst_image, const size_t src_width, const size_t src_height) {
-//     const float kernel_elements[] = {
-//         0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-//         0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-//         0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-//         0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-//         1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-//         1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-//         1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-//         0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-//         0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-//         0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-//         0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f
-//     };
-//     const Kernel round_kernel(kernel_elements, 11, 11, 5, 5);
-//     const size_t stride = 1;
-//     auto normalizer = [](float res) { return !res ? 0.0f : 255.0f; };
-
-//     convolve(src_image, dst_image, src_width, src_height, round_kernel, stride, normalizer);
-// }
-
 void dilate(const uint8_t* src_image, uint8_t* dst_image, const size_t src_width, const size_t src_height) {
     const float kernel_elements[] = {
         0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0,
@@ -260,6 +175,7 @@ void erode(const uint8_t* src_image, uint8_t* dst_image, const size_t src_width,
 
     convolve(src_image, dst_image, src_width, src_height, round_kernel, stride, normalizer);
 }
+
 
 int main() {
     uint8_t* img_input;
