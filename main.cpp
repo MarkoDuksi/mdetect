@@ -83,7 +83,7 @@ float stamp(const uint8_t *image, const size_t img_width, size_t idx, const Kern
     return accumulator;
 }
 
-void convolve(const uint8_t* src_image, uint8_t* dst_image, size_t src_width, size_t src_height, const Kernel& kernel, const size_t stride, float (*normalizer)(float)) {
+void convolve(const uint8_t* src_image, size_t src_width, size_t src_height, const Kernel& kernel, const size_t stride, float (*normalizer)(float), uint8_t* dst_image) {
     size_t src_idx = kernel.anchor_Y * src_width + kernel.anchor_X;
     size_t dst_idx = 0;
 
@@ -100,7 +100,7 @@ void convolve(const uint8_t* src_image, uint8_t* dst_image, size_t src_width, si
     }
 }
 
-void downscale(const uint8_t* src_image, uint8_t* dst_image, const size_t src_width, const size_t src_height) {
+void downscale(const uint8_t* src_image, const size_t src_width, const size_t src_height, uint8_t* dst_image) {
     const float kernel_elements[] = {
         1.0f, 1.0f, 1.0f, 1.0f,
         1.0f, 1.0f, 1.0f, 1.0f,
@@ -111,26 +111,29 @@ void downscale(const uint8_t* src_image, uint8_t* dst_image, const size_t src_wi
     const size_t stride = 4;
     auto normalizer = [] (float x) { return x / 16.0f; };
 
-    convolve(src_image, dst_image, src_width, src_height, flat_kernel, stride, normalizer);
+    convolve(src_image, src_width, src_height, flat_kernel, stride, normalizer, dst_image);
 }
 
-void absdiff(const uint8_t* image1, const uint8_t* image2, uint8_t* abs_diff, const size_t img_size) {
+void absdiff(const uint8_t* image1, const uint8_t* image2, const size_t src_width, const size_t src_height, uint8_t* abs_diff) {
+    const size_t img_size = src_width * src_height;
     for (size_t i = 0; i < img_size; ++i) {
         abs_diff[i] = abs(image1[i] - image2[i]);
     }
 }
 
-void update_background(uint8_t* img_foreground, uint8_t* img_background, size_t img_size) {
+void update_background(uint8_t* img_foreground, size_t src_width, const size_t src_height, uint8_t* img_background) {
+    const size_t img_size = src_width * src_height;
     memcpy(img_background, img_foreground, img_size);
 }
 
-void threshold(const uint8_t* src_image, uint8_t* dst_image, const size_t img_size, const uint8_t threshold) {
+void threshold(const uint8_t* src_image, const size_t src_width, const size_t src_height, const uint8_t threshold, uint8_t* dst_image) {
+    const size_t img_size = src_width * src_height;
     for (size_t i = 0; i < img_size; ++i) {
         dst_image[i] = src_image[i] < threshold ? 0 : 255;
     }
 }
 
-void dilate(const uint8_t* src_image, uint8_t* dst_image, const size_t src_width, const size_t src_height) {
+void dilate(const uint8_t* src_image, const size_t src_width, const size_t src_height, uint8_t* dst_image) {
     const float kernel_elements[] = {
         0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0,
         0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
@@ -150,10 +153,10 @@ void dilate(const uint8_t* src_image, uint8_t* dst_image, const size_t src_width
     const size_t stride = 1;
     auto normalizer = [](float res) { return !res ? 0.0f : 255.0f; };
 
-    convolve(src_image, dst_image, src_width, src_height, round_kernel, stride, normalizer);
+    convolve(src_image, src_width, src_height, round_kernel, stride, normalizer, dst_image);
 }
 
-void erode(const uint8_t* src_image, uint8_t* dst_image, const size_t src_width, const size_t src_height) {
+void erode(const uint8_t* src_image, const size_t src_width, const size_t src_height, uint8_t* dst_image) {
     const float kernel_elements[] = {
         0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0,
         0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
@@ -173,7 +176,11 @@ void erode(const uint8_t* src_image, uint8_t* dst_image, const size_t src_width,
     const size_t stride = 1;
     auto normalizer = [](float res) { return res < 30600.0f ? 0.0f : 255.0f; };
 
-    convolve(src_image, dst_image, src_width, src_height, round_kernel, stride, normalizer);
+    convolve(src_image, src_width, src_height, round_kernel, stride, normalizer, dst_image);
+}
+
+void padd(const uint8_t *src_image, const size_t src_width, const size_t src_height, const size_t pad_size, const uint8_t pad_value, uint8_t *dst_image) {
+
 }
 
 
@@ -214,24 +221,17 @@ int main() {
         // point to the green channel
         img_input = &img_rgb._data[SIZE_1024x768];
 
-        downscale(img_input, img_downscaled, WIDTH_1024, HEIGHT_768);
-        absdiff(img_downscaled, img_background, img_diff, SIZE_256x192);
-        threshold(img_diff, img_binarized, SIZE_256x192, THRESHOLD_127);
-        // dilate2(img_binarized, img_dilated2, WIDTH_256, HEIGHT_192);
-        // dilate4(img_binarized, img_dilated4, WIDTH_256, HEIGHT_192);
-        // dilate6(img_binarized, img_dilated6, WIDTH_256, HEIGHT_192);
-        // dilate8(img_binarized, img_dilated8, WIDTH_256, HEIGHT_192);
-        dilate(img_binarized, img_dilated, WIDTH_256, HEIGHT_192);
-        erode(img_dilated, img_eroded, WIDTH_244, HEIGHT_180);
+        downscale(img_input, WIDTH_1024, HEIGHT_768, img_downscaled);
+        absdiff(img_downscaled, img_background, WIDTH_256, HEIGHT_192, img_diff);
+        threshold(img_diff, WIDTH_256, HEIGHT_192, THRESHOLD_127, img_binarized);
+        dilate(img_binarized, WIDTH_256, HEIGHT_192, img_dilated);
+        erode(img_dilated, WIDTH_244, HEIGHT_180, img_eroded);
 
-        update_background(img_downscaled, img_background, SIZE_256x192);
+        update_background(img_downscaled, WIDTH_256, HEIGHT_192, img_background);
 
         img1.assign(img_downscaled, WIDTH_256, HEIGHT_192);
         // img2.assign(img_diff, WIDTH_256, HEIGHT_192);
         // img3.assign(img_binarized, WIDTH_256, HEIGHT_192);
-        // img4.assign(img_dilated2, WIDTH_254, HEIGHT_190);
-        // img4.assign(img_dilated6, WIDTH_250, HEIGHT_186);
-        // img4.assign(img_dilated8, WIDTH_248, HEIGHT_184);
         img4.assign(img_eroded, WIDTH_232, HEIGHT_168);
 
         disp1 = img1;
