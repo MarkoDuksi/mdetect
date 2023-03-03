@@ -16,33 +16,9 @@ namespace cimg = cimg_library;
 #define HEIGHT_192 192
 #define SIZE_256x192 49152
 
-#define WIDTH_254 254
-#define HEIGHT_190 190
-#define SIZE_254x190 48260
-
-#define WIDTH_252 252
-#define HEIGHT_188 188
-#define SIZE_252x188 47376
-
-#define WIDTH_250 250
-#define HEIGHT_186 186
-#define SIZE_250x186 46500
-
-#define WIDTH_248 248
-#define HEIGHT_184 184
-#define SIZE_248x184 45632
-
-#define WIDTH_246 246
-#define HEIGHT_182 182
-#define SIZE_246x182 44772
-
-#define WIDTH_244 244
-#define HEIGHT_180 180
-#define SIZE_244x180 43920
-
-#define WIDTH_232 232
-#define HEIGHT_168 168
-#define SIZE_232x168 38976
+#define WIDTH_268 268
+#define HEIGHT_204 204
+#define SIZE_268x204 54672
 
 #define DEPTH_1 1
 #define CHANNELS_3 3
@@ -179,8 +155,26 @@ void erode(const uint8_t* src_image, const size_t src_width, const size_t src_he
     convolve(src_image, src_width, src_height, round_kernel, stride, normalizer, dst_image);
 }
 
-void padd(const uint8_t *src_image, const size_t src_width, const size_t src_height, const size_t pad_size, const uint8_t pad_value, uint8_t *dst_image) {
+void pad(uint8_t *src_image, const size_t src_width, const size_t src_height, const uint8_t pad_value, const size_t pad_size, uint8_t *dst_image) {
+    const size_t twice_pad_size = 2 * pad_size;
+    const size_t padding_top_size = pad_size * (src_width + twice_pad_size + 1);
+    const size_t padding_bottom_size = pad_size * (src_width + twice_pad_size - 1);
+    
+    // top padding
+    memset(dst_image, pad_value, padding_top_size);
+    dst_image += padding_top_size;
 
+    // left padding + image + right padding
+    for (size_t i = 0; i < src_height; ++i) {
+        memcpy(dst_image, src_image, src_width);
+        dst_image += src_width;
+        src_image += src_width;
+        memset(dst_image, pad_value, twice_pad_size);
+        dst_image += twice_pad_size;
+    }
+
+    // bottom padding
+    memset(dst_image, pad_value, padding_bottom_size);
 }
 
 
@@ -190,13 +184,9 @@ int main() {
     uint8_t img_background[SIZE_256x192] = { 0 };
     uint8_t img_diff[SIZE_256x192];
     uint8_t img_binarized[SIZE_256x192];
-    // uint8_t img_dilated2[SIZE_254x190];
-    // uint8_t img_dilated4[SIZE_252x188];
-    // uint8_t img_dilated6[SIZE_250x186];
-    // uint8_t img_dilated8[SIZE_248x184];
-    // uint8_t img_dilated10[SIZE_246x182];
-    uint8_t img_dilated[SIZE_244x180];
-    uint8_t img_eroded[SIZE_232x168];
+    uint8_t img_aux[SIZE_268x204];
+    uint8_t img_dilated[SIZE_256x192];
+    uint8_t img_eroded[SIZE_256x192];
 
     // filenames from 'captures/' into sorted std::vector<std::string>
     std::vector<std::string> dir_content;
@@ -209,11 +199,9 @@ int main() {
     cimg::CImg<uint8_t> img1;
     // cimg::CImg<uint8_t> img2;
     // cimg::CImg<uint8_t> img3;
-    cimg::CImg<uint8_t> img4;
+    cimg::CImg<uint8_t> img2;
     cimg::CImgDisplay disp1;
-    // cimg::CImgDisplay disp2;
-    // cimg::CImgDisplay disp3;
-    cimg::CImgDisplay disp4;
+    cimg::CImgDisplay disp2;
 
     for (const auto& filename : dir_content) {
         img_rgb.assign(filename.c_str());
@@ -224,20 +212,21 @@ int main() {
         downscale(img_input, WIDTH_1024, HEIGHT_768, img_downscaled);
         absdiff(img_downscaled, img_background, WIDTH_256, HEIGHT_192, img_diff);
         threshold(img_diff, WIDTH_256, HEIGHT_192, THRESHOLD_127, img_binarized);
-        dilate(img_binarized, WIDTH_256, HEIGHT_192, img_dilated);
-        erode(img_dilated, WIDTH_244, HEIGHT_180, img_eroded);
+        pad(img_binarized, WIDTH_256, HEIGHT_192, 0, 6, img_aux);
+        dilate(img_aux, WIDTH_268, HEIGHT_204, img_dilated);
+        pad(img_dilated, WIDTH_256, HEIGHT_192, 255, 6, img_aux);
+        erode(img_aux, WIDTH_268, HEIGHT_204, img_eroded);
 
         update_background(img_downscaled, WIDTH_256, HEIGHT_192, img_background);
 
         img1.assign(img_downscaled, WIDTH_256, HEIGHT_192);
-        // img2.assign(img_diff, WIDTH_256, HEIGHT_192);
-        // img3.assign(img_binarized, WIDTH_256, HEIGHT_192);
-        img4.assign(img_eroded, WIDTH_232, HEIGHT_168);
+        // img2.assign(img_binarized, WIDTH_256, HEIGHT_192);
+        // img2.assign(img_aux, WIDTH_268, HEIGHT_204);
+        // img2.assign(img_dilated, WIDTH_256, HEIGHT_192);
+        img2.assign(img_eroded, WIDTH_256, HEIGHT_192);
 
         disp1 = img1;
-        // disp2 = img2;
-        // disp3 = img3;
-        disp4 = img4;
+        disp2 = img2;
 
         // disp.wait(100);
     }
