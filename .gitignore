@@ -1,4 +1,5 @@
 output*
 input*
 *.nogit*
-main.out
+*.o
+*.out
