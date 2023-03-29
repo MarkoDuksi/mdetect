@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdlib>
+
 
 namespace filters {
 
@@ -76,7 +78,7 @@ template<typename T>
 void absdiff(const T* image1, const T* image2, const size_t src_width, const size_t src_height, T* abs_diff) {
     const size_t img_size = src_width * src_height;
     for (size_t i = 0; i < img_size; ++i) {
-        abs_diff[i] = abs(image1[i] - image2[i]);
+        abs_diff[i] = std::abs(image1[i] - image2[i]);
     }
 }
 

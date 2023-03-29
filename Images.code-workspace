@@ -4,5 +4,18 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"files.associations": {
+			"array": "cpp",
+			"*.tcc": "cpp",
+			"memory": "cpp",
+			"istream": "cpp",
+			"ranges": "cpp",
+			"functional": "cpp",
+			"tuple": "cpp",
+			"utility": "cpp",
+			"__functional_base": "cpp",
+			"locale": "cpp"
+		}
+	}
 }

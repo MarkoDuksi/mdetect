@@ -1,5 +1,5 @@
+obj*
+build*
 output*
 input*
 *.nogit*
-*.o
-*.out

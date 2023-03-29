@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include "CImg.h"
+#include "bbox.h"
 #include "motion.h"
 
 
@@ -17,9 +18,10 @@ namespace cimg = cimg_library;
 int main(int argc, char** argv) {
     std::string_view input_dir = argv[1];
     std::string_view output_dir = argv[2];
-    cimg::CImg<uint8_t> img_rgb;
-    uint8_t* img_full_size;
-    std::vector<BBox> bboxes;
+    cimg::CImg<uint8_t> img_rgb1;
+    cimg::CImg<uint8_t> img_rgb2;
+    uint8_t* full_size_img;
+    std::vector<bbox::BBox> bboxes;
     const uint8_t green[] = {0, 255, 0};
     const uint8_t red[] = {255, 0, 0};
 
@@ -30,29 +32,30 @@ int main(int argc, char** argv) {
     }
     std::sort(input_paths.begin(), input_paths.end());
 
-    img_rgb.assign(input_paths[0].c_str());
-    img_full_size = &img_rgb._data[WIDTH_1024 * HEIGHT_768];
+    img_rgb1.assign(input_paths[0].c_str());
+    full_size_img = &img_rgb1._data[WIDTH_1024 * HEIGHT_768];
 
-    MotionDetector<uint8_t, WIDTH_1024, HEIGHT_768> md;
-    md.SetReference(img_full_size);
+    MotionDetector md(full_size_img, WIDTH_1024, HEIGHT_768, full_size_img);
+    // MotionDetector md(full_size_img, WIDTH_1024, HEIGHT_768);
 
     uint subframe_count;
     for (const auto& input_path : input_paths) {
         std::cout << "processing image: " << input_path << std::endl;
 
-        img_rgb.assign(input_path.c_str());
-        img_full_size = &img_rgb._data[WIDTH_1024 * HEIGHT_768];
-        std::vector<BBox>bboxes = md.Detect(img_full_size);
+        img_rgb2.assign(input_path.c_str());
+        full_size_img = &img_rgb2._data[WIDTH_1024 * HEIGHT_768];
+        std::vector<bbox::BBox>bboxes = md.detect(full_size_img);
 
+        // std::cout << "bboxes.size(): " << bboxes.size() << std::endl;
         if (bboxes.size()) {
             subframe_count = 1;
             for (auto bbox : bboxes) {
-                img_rgb.draw_rectangle(4 * bbox.topleft_X, 4 * bbox.topleft_Y, 4 * (bbox.bottomright_X - 1), 4 * (bbox.bottomright_Y - 1), green, 1, ~0U);
-                // img_rgb.get_crop(4 * bbox.topleft_X, 4 * bbox.topleft_Y, 4 * (bbox.bottomright_X - 1), 4 * (bbox.bottomright_Y - 1))
-                    //    .rotate(-90)
-                    //    .save((std::string(output_dir) + "/" + input_path.stem().c_str() + "_" + std::to_string(subframe_count++) + ".jpg").c_str());
+                img_rgb2.draw_rectangle(4 * bbox.topleft_X, 4 * bbox.topleft_Y, 4 * (bbox.bottomright_X) - 1, 4 * (bbox.bottomright_Y) - 1, green, 1, ~0U);
+                // img_rgb2.get_crop(4 * bbox.topleft_X, 4 * bbox.topleft_Y, 4 * (bbox.bottomright_X) - 1, 4 * (bbox.bottomright_Y) - 1)
+                //        .rotate(-90)
+                //        .save((std::string(output_dir) + "/" + input_path.stem().c_str() + "_" + std::to_string(subframe_count++) + ".jpg").c_str());
             }
-            img_rgb.rotate(-90).save((std::string(output_dir) + "/" + input_path.filename().c_str()).c_str());
+            img_rgb2.rotate(-90).save((std::string(output_dir) + "/" + input_path.filename().c_str()).c_str());
         }
     }
 
