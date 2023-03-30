@@ -25,50 +25,54 @@ DEBUG_BIN_DIR = $(BIN_DIR)/debug
 DEBUG_OBJS = $(SRCS:$(SRC_DIR)/%.cpp=$(DEBUG_OBJ_DIR)/%.o)
 DEBUG_BIN = $(BIN_DIR)/debug/$(MAIN_BASENAME).out
 
+
 .PHONY: all
-all: release
+all: debug release
 
 .PHONY: release
-release: release-dirs
 release: $(RELEASE_BIN)
 
 .PHONY: debug
-debug: debug-dirs
 debug: $(DEBUG_BIN)
 
-.PHONY: release-dirs
-release-dirs:
-	mkdir -p $(RELEASE_OBJ_DIR) $(RELEASE_BIN_DIR)
 
-.PHONY: debug-dirs
-debug-dirs:
-	mkdir -p $(DEBUG_OBJ_DIR) $(DEBUG_BIN_DIR)
-
-
-$(RELEASE_BIN): $(RELEASE_OBJS)
+$(RELEASE_BIN): $(RELEASE_OBJS) | $(RELEASE_BIN_DIR)
 	$(CXX) $(CXX_RELEASE_FLAGS) $(CXX_FLAGS) $^ -o $@ $(LIB_INCLUDE_DIRS_FLAGS) $(LD_FLAGS)
 
-$(RELEASE_OBJ_DIR)/$(MAIN_BASENAME).o: $(SRC_DIR)/$(MAIN_BASENAME).cpp $(HDR_DIRS)/CImg.h $(SRC_DIR)/bbox.h $(SRC_DIR)/motion.h
+$(RELEASE_OBJ_DIR)/$(MAIN_BASENAME).o: $(SRC_DIR)/$(MAIN_BASENAME).cpp $(HDR_DIRS)/CImg.h $(SRC_DIR)/bbox.h $(SRC_DIR)/motion.h | $(RELEASE_OBJ_DIR)
 	$(CXX) $(CXX_RELEASE_FLAGS) $(CXX_FLAGS) $(HDR_INCLUDE_DIRS_FLAGS) -c $< -o $@
 
-$(RELEASE_OBJ_DIR)/bbox.o: $(SRC_DIR)/bbox.cpp $(SRC_DIR)/bbox.h
+$(RELEASE_OBJ_DIR)/bbox.o: $(SRC_DIR)/bbox.cpp $(SRC_DIR)/bbox.h | $(RELEASE_OBJ_DIR)
 	$(CXX) $(CXX_RELEASE_FLAGS) $(CXX_FLAGS) $(HDR_INCLUDE_DIRS_FLAGS) -c $< -o $@
 
-$(RELEASE_OBJ_DIR)/motion.o: $(SRC_DIR)/motion.cpp $(SRC_DIR)/motion.h $(SRC_DIR)/bbox.h $(SRC_DIR)/filters.h
+$(RELEASE_OBJ_DIR)/motion.o: $(SRC_DIR)/motion.cpp $(SRC_DIR)/motion.h $(SRC_DIR)/bbox.h $(SRC_DIR)/filters.h | $(RELEASE_OBJ_DIR)
 	$(CXX) $(CXX_RELEASE_FLAGS) $(CXX_FLAGS) $(HDR_INCLUDE_DIRS_FLAGS) -c $< -o $@
 
 
-$(DEBUG_BIN): $(DEBUG_OBJS)
+$(DEBUG_BIN): $(DEBUG_OBJS) | $(DEBUG_BIN_DIR)
 	$(CXX) $(CXX_DEBUG_FLAGS) $(CXX_FLAGS) $^ -o $@ $(LIB_INCLUDE_DIRS_FLAGS) $(LD_FLAGS)
 
-$(DEBUG_OBJ_DIR)/$(MAIN_BASENAME).o: $(SRC_DIR)/$(MAIN_BASENAME).cpp $(HDR_DIRS)/CImg.h $(SRC_DIR)/bbox.h $(SRC_DIR)/motion.h
+$(DEBUG_OBJ_DIR)/$(MAIN_BASENAME).o: $(SRC_DIR)/$(MAIN_BASENAME).cpp $(HDR_DIRS)/CImg.h $(SRC_DIR)/bbox.h $(SRC_DIR)/motion.h | $(DEBUG_OBJ_DIR)
 	$(CXX) $(CXX_DEBUG_FLAGS) $(CXX_FLAGS) $(HDR_INCLUDE_DIRS_FLAGS) -c $< -o $@
 
-$(DEBUG_OBJ_DIR)/bbox.o: $(SRC_DIR)/bbox.cpp $(SRC_DIR)/bbox.h
+$(DEBUG_OBJ_DIR)/bbox.o: $(SRC_DIR)/bbox.cpp $(SRC_DIR)/bbox.h | $(DEBUG_OBJ_DIR)
 	$(CXX) $(CXX_DEBUG_FLAGS) $(CXX_FLAGS) $(HDR_INCLUDE_DIRS_FLAGS) -c $< -o $@
 
-$(DEBUG_OBJ_DIR)/motion.o: $(SRC_DIR)/motion.cpp $(SRC_DIR)/motion.h $(SRC_DIR)/bbox.h $(SRC_DIR)/filters.h
+$(DEBUG_OBJ_DIR)/motion.o: $(SRC_DIR)/motion.cpp $(SRC_DIR)/motion.h $(SRC_DIR)/bbox.h $(SRC_DIR)/filters.h | $(DEBUG_OBJ_DIR)
 	$(CXX) $(CXX_DEBUG_FLAGS) $(CXX_FLAGS) $(HDR_INCLUDE_DIRS_FLAGS) -c $< -o $@
+
+
+$(RELEASE_BIN_DIR):
+	mkdir -p $(RELEASE_BIN_DIR)
+
+$(RELEASE_OBJ_DIR):
+	mkdir -p $(RELEASE_OBJ_DIR)
+
+$(DEBUG_BIN_DIR):
+	mkdir -p $(DEBUG_BIN_DIR)
+
+$(DEBUG_OBJ_DIR):
+	mkdir -p $(DEBUG_OBJ_DIR)
 
 
 .PHONY: clean-release
