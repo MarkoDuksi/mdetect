@@ -8,7 +8,7 @@
         "name": "(gdb) Launch",
         "type": "cppdbg",
         "request": "launch",
-        "program": "${workspaceFolder}/main.out",
+        "program": "${workspaceFolder}/debug/main.out",
         "args": [
             "${workspaceFolder}/input/label_TURNED_OVER/1",
             "${workspaceFolder}/output"

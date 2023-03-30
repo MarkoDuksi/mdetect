@@ -21,7 +21,6 @@ int main(int argc, char** argv) {
     cimg::CImg<uint8_t> img_rgb1;
     cimg::CImg<uint8_t> img_rgb2;
     uint8_t* full_size_img;
-    std::vector<bbox::BBox> bboxes;
     const uint8_t green[] = {0, 255, 0};
     const uint8_t red[] = {255, 0, 0};
 
@@ -44,7 +43,7 @@ int main(int argc, char** argv) {
 
         img_rgb2.assign(input_path.c_str());
         full_size_img = &img_rgb2._data[WIDTH_1024 * HEIGHT_768];
-        std::vector<bbox::BBox>bboxes = md.detect(full_size_img);
+        auto bboxes = md.detect(full_size_img);
 
         // std::cout << "bboxes.size(): " << bboxes.size() << std::endl;
         if (bboxes.size()) {

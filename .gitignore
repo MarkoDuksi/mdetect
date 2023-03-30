@@ -1,5 +1,5 @@
 obj*
-build*
+bin*
 output*
 input*
 *.nogit*
