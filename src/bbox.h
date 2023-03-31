@@ -47,7 +47,8 @@ namespace bbox {
             img_aux[idx] = next_label;
             bboxes_in_progress.emplace_back(idx);
             labels_progression.push_back(next_label++);
-        } else img_aux[idx] = 0;
+        } else
+            img_aux[idx] = 0;
         west_idx = idx++;
 
         // the rest of row 0
@@ -63,7 +64,8 @@ namespace bbox {
                     bboxes_in_progress.emplace_back(idx);
                     labels_progression.push_back(next_label++);
                 }
-            } else img_aux[idx] = 0;
+            } else
+                img_aux[idx] = 0;
             west_idx = idx++;
         }
 
@@ -83,7 +85,8 @@ namespace bbox {
                     bboxes_in_progress.emplace_back(idx);
                     labels_progression.push_back(next_label++);
                 }
-            } else img_aux[idx] = 0;
+            } else
+                img_aux[idx] = 0;
             west_idx = idx++;
             ++north_idx;
         
@@ -111,7 +114,8 @@ namespace bbox {
                         labels_progression.push_back(next_label++);
                     }
                 }
-                else img_aux[idx] = 0;
+                else
+                    img_aux[idx] = 0;
             }
         }
 
@@ -119,9 +123,8 @@ namespace bbox {
         for (size_t i = 1; i < labels_progression.size(); ++i) {
             if (i == labels_progression[i]) {
                 std::pair<size_t, size_t> bbox_size = bboxes_in_progress[i].getSize();
-                if (std::min(bbox_size.first, bbox_size.second) >= 30) {
+                if (std::min(bbox_size.first, bbox_size.second) >= 30)
                     bboxes_final.push_back(bboxes_in_progress[i]);
-                }
             }
         }
 
