@@ -3,16 +3,15 @@
 #include <filesystem>
 #include <vector>
 #include <algorithm>
-
 #include "CImg.h"
 #include "bbox.h"
 #include "motion.h"
-
 
 namespace cimg = cimg_library;
 
 #define WIDTH_1024 1024
 #define HEIGHT_768 768
+#define MIN_BBOX_DIM 30
 
 
 int main(int argc, char** argv) {
@@ -34,8 +33,8 @@ int main(int argc, char** argv) {
     img_rgb1.assign(input_paths[0].c_str());
     full_size_img = &img_rgb1._data[WIDTH_1024 * HEIGHT_768];
 
-    MotionDetector md(WIDTH_1024, HEIGHT_768, full_size_img, full_size_img);
-    // MotionDetector md(full_size_img, WIDTH_1024, HEIGHT_768);
+    MotionDetector md(WIDTH_1024, HEIGHT_768, MIN_BBOX_DIM, full_size_img, full_size_img);
+    // MotionDetector md(WIDTH_1024, HEIGHT_768, MIN_BBOX_DIM, full_size_img);
 
     uint subframe_count;
     for (const auto& input_path : input_paths) {

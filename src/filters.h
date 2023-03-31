@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdlib>
+#include <limits>
 
 
 namespace filters {
@@ -11,8 +12,7 @@ namespace filters {
         const size_t width, height;
         const size_t anchor_X, anchor_Y;
 
-        Kernel(const T* elements, const size_t width, const size_t height, 
-            const size_t anchor_X = 0, const size_t anchor_Y = 0) :
+        Kernel(const T* elements, const size_t width, const size_t height, const size_t anchor_X = 0, const size_t anchor_Y = 0) :
             elements(elements),
             width(width),
             height(height),
@@ -21,7 +21,7 @@ namespace filters {
             {}
     };
 
-    // helper func: one-time apply rotated kernel over the neighbourhood of image[idx] (no bounds checking)
+    // helper func: one-time apply rotated kernel over the neighbourhood of image[idx], no bounds checking
     template<typename T, typename K>
     K stamp(const T* image, const size_t img_width, size_t idx, const Kernel<K>& kernel){
         size_t kernel_idx = kernel.width * kernel.height - 1;
@@ -42,7 +42,7 @@ namespace filters {
     }
 
     template<typename T, typename K>
-    void convolve(const T* src_image, size_t src_width, size_t src_height, const Kernel<K>& kernel, const size_t stride, T (*cb_normalize)(K), T* dst_image) {
+    void convolve(const T* src_image, const size_t src_width, const size_t src_height, const Kernel<K>& kernel, const size_t stride, T (*cb_normalize)(K), T* dst_image) {
         size_t src_idx = kernel.anchor_Y * src_width + kernel.anchor_X;
         size_t dst_idx = 0;
 
@@ -69,16 +69,16 @@ namespace filters {
         };
         const Kernel flat_kernel(kernel_elements, 4, 4, 0, 0);
         const size_t stride = 4;
-        auto normalize = [] (float x) { return (uint8_t) (x / 16.0F); };
+        auto normalize = [](float x) { return (T) (x / 16.0F); };
 
         convolve<T, float>(src_image, src_width, src_height, flat_kernel, stride, normalize, dst_image);
     }
 
     template<typename T>
-    void absdiff(const T* image1, const T* image2, const size_t src_width, const size_t src_height, T* abs_diff) {
+    void absdiff(const T* src_image1, const T* src_image2, const size_t src_width, const size_t src_height, T* dst_image) {
         const size_t img_size = src_width * src_height;
         for (size_t i = 0; i < img_size; ++i) {
-            abs_diff[i] = std::abs(image1[i] - image2[i]);
+            dst_image[i] = std::abs(src_image1[i] - src_image2[i]);
         }
     }
 
@@ -91,7 +91,7 @@ namespace filters {
     }
 
     template<typename T>
-    void pad(T* src_image, const size_t src_width, const size_t src_height, const T pad_value, const size_t pad_size, T* dst_image) {
+    void pad(const T* src_image, const size_t src_width, const size_t src_height, const T pad_value, const size_t pad_size, T* dst_image) {
         const size_t twice_pad_size = 2 * pad_size;
         const size_t padding_top_size = pad_size * (src_width + twice_pad_size + 1);
         const size_t padding_bottom_size = pad_size * (src_width + twice_pad_size - 1);
@@ -100,7 +100,7 @@ namespace filters {
         memset(dst_image, pad_value, padding_top_size * sizeof(T));
         dst_image += padding_top_size;
 
-        // left padding + image + right padding
+        // image + right padding + left padding
         for (size_t i = 0; i < src_height; ++i) {
             memcpy(dst_image, src_image, src_width * sizeof(T));
             dst_image += src_width;

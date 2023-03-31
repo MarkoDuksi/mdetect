@@ -17,11 +17,12 @@ void MotionDetector::updateReference(const uint8_t* new_reference) {
 }
 
 // public:
-MotionDetector::MotionDetector(const size_t img_width, const size_t img_height, const uint8_t* init_img_reference, uint8_t* scratchpad) :
-    m_full_width(img_width),
-    m_full_height(img_height),
-    m_working_width(m_full_width / 4),
-    m_working_height(m_full_height / 4),
+MotionDetector::MotionDetector(const size_t img_width, const size_t img_height, const size_t min_bbox_dimension, const uint8_t* init_img_reference, uint8_t* scratchpad) :
+    m_img_full_width(img_width),
+    m_img_full_height(img_height),
+    m_min_bbox_dimension(min_bbox_dimension),
+    m_working_width(m_img_full_width / 4),
+    m_working_height(m_img_full_height / 4),
     m_working_size(m_working_width * m_working_height),
     m_padded_width(m_working_width + 2 * PADDING_SIZE_6),
     m_padded_height(m_working_height + 2 * PADDING_SIZE_6),
@@ -39,21 +40,21 @@ MotionDetector::MotionDetector(const size_t img_width, const size_t img_height, 
         m_aux_buff3 = m_aux_buff2 + m_working_size;     // required size: m_padded_size
 
         if (init_img_reference)
-            setReference(init_img_reference);
+            setImgReference(init_img_reference);
         else
-            zeroReference();
+            setBlankReference();
     }
 
-void MotionDetector::zeroReference() {
+void MotionDetector::setBlankReference() {
     memset(m_reference, 0, m_working_size * sizeof(uint8_t));
 }
 
-void MotionDetector::setReference(const uint8_t* init_img_reference) {
-    filters::downscale(init_img_reference, m_full_width, m_full_height, m_reference);
+void MotionDetector::setImgReference(const uint8_t* img_reference) {
+    filters::downscale(img_reference, m_img_full_width, m_img_full_height, m_reference);
 }
 
 std::vector<bbox::BBox> MotionDetector::detect(const uint8_t* img) {
-    filters::downscale(img, m_full_width, m_full_height, m_aux_buff1);
+    filters::downscale(img, m_img_full_width, m_img_full_height, m_aux_buff1);
     filters::absdiff(m_aux_buff1, m_reference, m_working_width, m_working_height, m_aux_buff2);
     filters::threshold(m_aux_buff2, m_working_width, m_working_height, THRESHOLD_127, m_aux_buff2);
     filters::pad(m_aux_buff2, m_working_width, m_working_height, PADDING_VALUE_0, PADDING_SIZE_6, m_aux_buff3);
@@ -61,5 +62,5 @@ std::vector<bbox::BBox> MotionDetector::detect(const uint8_t* img) {
 
     updateReference(m_aux_buff1);
 
-    return bbox::get_bboxes(m_aux_buff2, m_working_width, m_working_height, m_aux_buff3);
+    return bbox::get_bboxes(m_aux_buff2, m_working_width, m_working_height, m_min_bbox_dimension, m_aux_buff3);
 }

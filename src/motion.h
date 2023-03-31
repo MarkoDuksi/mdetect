@@ -3,8 +3,9 @@
 
 class MotionDetector {
     private:
-        const size_t m_full_width;
-        const size_t m_full_height;
+        const size_t m_img_full_width;
+        const size_t m_img_full_height;
+        const size_t m_min_bbox_dimension;
         const size_t m_working_width;
         const size_t m_working_height;
         const size_t m_working_size;
@@ -20,11 +21,11 @@ class MotionDetector {
         void updateReference(const uint8_t* new_reference);
 
     public:
-        MotionDetector(const size_t img_width, const size_t img_height, const uint8_t* init_img_reference = nullptr, uint8_t* scratchpad = nullptr);
+        MotionDetector(const size_t img_width, const size_t img_height, const size_t min_bbox_dimension = 1, const uint8_t* init_img_reference = nullptr, uint8_t* scratchpad = nullptr);
 
-        void zeroReference();
+        void setBlankReference();
 
-        void setReference(const uint8_t* init_img_reference);
+        void setImgReference(const uint8_t* img_reference);
 
         std::vector<bbox::BBox> detect(const uint8_t* img);
 };
