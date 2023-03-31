@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
     img_rgb1.assign(input_paths[0].c_str());
     full_size_img = &img_rgb1._data[WIDTH_1024 * HEIGHT_768];
 
-    MotionDetector md(full_size_img, WIDTH_1024, HEIGHT_768, full_size_img);
+    MotionDetector md(WIDTH_1024, HEIGHT_768, full_size_img, full_size_img);
     // MotionDetector md(full_size_img, WIDTH_1024, HEIGHT_768);
 
     uint subframe_count;

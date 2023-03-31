@@ -13,14 +13,16 @@ class MotionDetector {
         const size_t m_padded_size;
         std::unique_ptr<uint8_t> m_scratchpad;
         uint8_t* m_reference;
-        uint8_t* m_buff1;
-        uint8_t* m_buff2;
-        uint8_t* m_buff3;
+        uint8_t* m_aux_buff1;
+        uint8_t* m_aux_buff2;
+        uint8_t* m_aux_buff3;
 
-        void updateReference(const uint8_t* newReference);
+        void updateReference(const uint8_t* new_reference);
 
     public:
-        MotionDetector(const uint8_t* init_img_reference, const size_t img_width, const size_t img_height, uint8_t* scratchpad = nullptr);
+        MotionDetector(const size_t img_width, const size_t img_height, const uint8_t* init_img_reference = nullptr, uint8_t* scratchpad = nullptr);
+
+        void zeroReference();
 
         void setReference(const uint8_t* init_img_reference);
 
