@@ -4,8 +4,10 @@
 
 using namespace bbox;
 
+// private:
 size_t BBox::s_img_width = 0;
 
+// public:
 void BBox::setImgWidth(size_t img_width) {
     s_img_width = img_width;
 }
@@ -19,7 +21,7 @@ bbox::BBox::BBox (size_t idx) {
     bottomright_Y =  row + 1;
 }
 
-std::pair<size_t, size_t> BBox::get_size() const {
+std::pair<size_t, size_t> BBox::getSize() const {
     return {bottomright_X - topleft_X, bottomright_Y - topleft_Y};
 }
 
