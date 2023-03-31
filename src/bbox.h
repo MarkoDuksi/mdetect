@@ -1,6 +1,11 @@
 #pragma once
 
+#include <cstdint>
 #include <vector>
+#include "filters.h"
+
+#define PADDING_VALUE_0 (uint8_t)0
+#define PADDING_SIZE_1 (size_t)1
 
 
 namespace bbox {
@@ -31,9 +36,12 @@ namespace bbox {
 
     template<typename T>
     std::vector<BBox> get_bboxes(const T* image, const size_t img_width, const size_t img_height, const size_t min_dimension, T* img_aux) {
-        size_t idx = 0;
-        size_t north_idx;
-        size_t west_idx;
+        filters::pad(image, img_width, img_height, PADDING_VALUE_0, PADDING_SIZE_1, img_aux);
+
+        size_t origin_idx = 0;
+        size_t idx = img_width + 3;
+        size_t north_idx = 1;
+        size_t west_idx = idx - 1;
 
         size_t west_label;
         size_t north_label;
@@ -43,63 +51,15 @@ namespace bbox {
         std::vector<BBox> bboxes = { 0 };
         std::vector<size_t> labels_progression = { 0 };
 
-        // first element
-        if (image[idx]) {
-            img_aux[idx] = next_label;
-            bboxes.emplace_back(idx);
-            labels_progression.push_back(next_label++);
-        } else
-            img_aux[idx] = 0;
-        west_idx = idx++;
-
-        // the rest of row 0
-        while (idx < img_width) {
-            if (image[idx]) {
-                west_label = img_aux[west_idx];
-                if (west_label) {
-                    img_aux[idx] = west_label;
-                    bboxes[west_label].merge(idx);
-                }
-                else {
-                    img_aux[idx] = next_label;
-                    bboxes.emplace_back(idx);
-                    labels_progression.push_back(next_label++);
-                }
-            } else
-                img_aux[idx] = 0;
-            west_idx = idx++;
-        }
-
-        // the rest of the image
-        north_idx = 0;
-        for (size_t i = 1; i < img_height; ++i) {
-            // first element of row i
-            if (image[idx]) {
-                north_label = img_aux[north_idx];
-                north_label = labels_progression[north_label];
-                if (north_label) {
-                    img_aux[idx] = north_label;
-                    bboxes[north_label].merge(idx);
-                }
-                else {
-                    img_aux[idx] = next_label;
-                    bboxes.emplace_back(idx);
-                    labels_progression.push_back(next_label++);
-                }
-            } else
-                img_aux[idx] = 0;
-            west_idx = idx++;
-            ++north_idx;
-        
-            // the rest of row i
-            for (size_t j = 1; j < img_width; ++j, ++idx, ++west_idx, ++north_idx) {
-                if (image[idx]) {
+        for (size_t i = 0; i < img_height; ++i) {
+            for (size_t j = 0; j < img_width; ++j, ++idx, ++origin_idx, ++west_idx, ++north_idx) {
+                if (img_aux[idx]) {
                     west_label = img_aux[west_idx];
                     north_label = img_aux[north_idx];
                     north_label = labels_progression[north_label];
                     if (west_label) {
                         img_aux[idx] = west_label;
-                        bboxes[west_label].merge(idx);
+                        bboxes[west_label].merge(origin_idx);
                         if (north_label) {
                             bboxes[west_label].merge(bboxes[north_label]);
                             labels_progression[north_label] = west_label;
@@ -107,17 +67,20 @@ namespace bbox {
                     }
                     else if (north_label) {
                         img_aux[idx] = north_label;
-                        bboxes[north_label].merge(idx);
+                        bboxes[north_label].merge(origin_idx);
                     }
                     else {
                         img_aux[idx] = next_label;
-                        bboxes.emplace_back(idx);
+                        bboxes.emplace_back(origin_idx);
                         labels_progression.push_back(next_label++);
                     }
                 }
                 else
                     img_aux[idx] = 0;
             }
+            idx += 2;
+            west_idx += 2;
+            north_idx += 2;
         }
 
         std::vector<BBox> bboxes_filtered;
