@@ -1,23 +1,22 @@
-#include <vector>
-#include <memory>
-#include <limits>
-#include <cstring>
-#include "filters.h"
-#include "bbox.h"
 #include "motion.h"
+
+#include <cstring>
+
+#include "filters.h"
+
 
 #define THRESHOLD_127 (uint8_t)127
 #define PADDING_VALUE_0 (uint8_t)0
-#define PADDING_SIZE_6 (size_t)6
+#define PADDING_SIZE_6 (uint8_t)6
 
 
 // private:
 void MotionDetector::updateReference(const uint8_t* new_reference) {
-    memcpy(m_reference, new_reference, m_working_size * sizeof(uint8_t));
+    std::memcpy(m_reference, new_reference, m_working_size * sizeof(uint8_t));
 }
 
 // public:
-MotionDetector::MotionDetector(const size_t img_width, const size_t img_height, const size_t min_bbox_dimension, const uint8_t* init_img_reference, uint8_t* scratchpad) :
+MotionDetector::MotionDetector(const uint16_t img_width, const uint16_t img_height, const uint16_t min_bbox_dimension, const uint8_t* init_img_reference, uint8_t* scratchpad) :
     m_img_full_width(img_width),
     m_img_full_height(img_height),
     m_min_bbox_dimension(min_bbox_dimension),
@@ -46,7 +45,7 @@ MotionDetector::MotionDetector(const size_t img_width, const size_t img_height, 
     }
 
 void MotionDetector::setBlankReference() {
-    memset(m_reference, 0, m_working_size * sizeof(uint8_t));
+    std::memset(m_reference, 0, m_working_size * sizeof(uint8_t));
 }
 
 void MotionDetector::setImgReference(const uint8_t* img_reference) {
