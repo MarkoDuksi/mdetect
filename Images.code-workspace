@@ -15,7 +15,14 @@
 			"tuple": "cpp",
 			"utility": "cpp",
 			"__functional_base": "cpp",
-			"locale": "cpp"
+			"locale": "cpp",
+			"vector": "cpp",
+			"atomic": "cpp",
+			"cstdint": "cpp",
+			"__atomic": "cpp",
+			"cstring": "cpp",
+			"__atomic_generated": "cpp",
+			"__string": "cpp"
 		},
 		"C_Cpp.default.includePath": [
 			"include"
