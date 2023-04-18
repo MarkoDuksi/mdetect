@@ -30,7 +30,6 @@ class MotionDetector {
         MotionDetector(const uint16_t img_width, const uint16_t img_height, const uint16_t min_bbox_dimension = 1, const uint8_t* init_img_reference = nullptr, uint8_t* scratchpad = nullptr);
 
         void setBlankReference();
-
         void setImgReference(const uint8_t* img_reference);
 
         std::vector<bbox::BBox> detect(const uint8_t* img);

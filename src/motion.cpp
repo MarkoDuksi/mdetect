@@ -44,14 +44,17 @@ MotionDetector::MotionDetector(const uint16_t img_width, const uint16_t img_heig
             setBlankReference();
     }
 
+// public:
 void MotionDetector::setBlankReference() {
     std::memset(m_reference, 0, m_working_size * sizeof(uint8_t));
 }
 
+// public:
 void MotionDetector::setImgReference(const uint8_t* img_reference) {
     filters::downscale(img_reference, m_img_full_width, m_img_full_height, m_reference);
 }
 
+// public:
 std::vector<bbox::BBox> MotionDetector::detect(const uint8_t* img) {
     filters::downscale(img, m_img_full_width, m_img_full_height, m_aux_buff1);
     filters::absdiff(m_aux_buff1, m_reference, m_working_width, m_working_height, m_aux_buff2);

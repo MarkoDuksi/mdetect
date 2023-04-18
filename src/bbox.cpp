@@ -19,18 +19,22 @@ BBox::BBox(const uint32_t idx, const uint16_t width, const uint16_t height) {
     bottomright_Y =  row + height;
 }
 
+// public:
 void BBox::setImgWidth(const uint16_t img_width) {
     s_img_width = img_width;
 }
 
- uint16_t BBox::width() const {
+// public:
+uint16_t BBox::width() const {
     return bottomright_X - topleft_X;
 }
 
- uint16_t BBox::height() const {
+// public:
+uint16_t BBox::height() const {
     return bottomright_Y - topleft_Y;
 }
 
+// public:
 void BBox::merge(const uint32_t idx) {
     uint16_t row = idx / s_img_width;
     uint16_t col = idx - row * s_img_width;
@@ -38,6 +42,7 @@ void BBox::merge(const uint32_t idx) {
     bottomright_Y = std::max(bottomright_Y, (uint16_t)(row + 1));
 }
 
+// public:
 void BBox::merge(const BBox other) {
     topleft_X = std::min(topleft_X, other.topleft_X);
     topleft_Y = std::min(topleft_Y, other.topleft_Y);

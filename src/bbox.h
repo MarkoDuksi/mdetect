@@ -26,11 +26,9 @@ namespace bbox {
             static void setImgWidth(const uint16_t img_width);
 
             uint16_t width() const;
-
             uint16_t height() const;
 
             void merge(const uint32_t idx);
-
             void merge(const BBox other);
 
     };

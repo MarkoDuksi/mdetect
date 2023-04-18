@@ -22,7 +22,11 @@
 			"__atomic": "cpp",
 			"cstring": "cpp",
 			"__atomic_generated": "cpp",
-			"__string": "cpp"
+			"__string": "cpp",
+			"string_view": "cpp",
+			"deque": "cpp",
+			"string": "cpp",
+			"unordered_map": "cpp"
 		},
 		"C_Cpp.default.includePath": [
 			"include"
