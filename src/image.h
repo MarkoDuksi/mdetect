@@ -1,37 +1,127 @@
 #pragma once
 
 #include <stdint.h>
+#include <cstring>
+#include <cstdlib>
+#include <cassert>
 #include <string>
 
+#include "CImg.h"
 
-struct Image {
-        private:
-                uint8_t* m_data;
-                uint16_t m_width;
-                uint16_t m_height;
-                uint32_t m_size;
 
-        public:
-                Image(uint8_t* const img_buff, const uint16_t width, const uint16_t height) noexcept;
+class Image {
+    protected:
+        const uint16_t m_width;
+        const uint16_t m_height;
+        const uint32_t m_size;
+        uint8_t* const m_data;
 
-                Image(const Image& other) = delete;
-                Image& operator=(const Image& other);
+    public:
+        Image(const uint16_t static_width, const uint16_t static_height, uint8_t* const ptr_data) noexcept :
+            m_width(static_width),
+            m_height(static_height),
+            m_size(static_cast<uint32_t>(static_width) * static_height),
+            m_data(ptr_data)
+            {}
 
-                // redefine *shallow" move ctor
-                Image(Image&& other) noexcept = default;
+        // copy assignment
+        Image& operator=(const Image& other) {
+            if (this != &other) {
+                assert(m_width == other.m_width && m_height == other.m_height &&
+                       "Image cannot be copy-assigned from differently sized other image");
 
-                uint16_t width() const noexcept;
-                uint16_t height() const noexcept;
-                uint32_t size() const noexcept;
+                std::memcpy(m_data, other.m_data, m_size);
+            }
 
-                // redefine *shallow" move assignment op
-                Image& operator=(Image&& other) noexcept = default;
+            return *this;
+        }
 
-                uint8_t& at(const uint16_t row, const uint16_t col) const;
-                uint8_t at(const int32_t row, const int32_t col, uint8_t pad_value) const noexcept;
+        // reenable shallow copy
+        Image(const Image& other) noexcept = default;
 
-                Image& threshold(const uint8_t threshold) noexcept;
-                Image& absdiff(const Image& other);
+        uint16_t width() const noexcept {
+            return m_width;
+        }
 
-                void save(const char* filename) const;
+        uint16_t height() const noexcept {
+            return m_height;
+        }
+
+        uint32_t size() const noexcept {
+            return m_size;
+        }
+
+        uint8_t* data() const noexcept {
+            return m_data;
+        }
+
+        uint8_t& at(const uint16_t row, const uint16_t col) const {
+            return m_data[static_cast<uint32_t>(row) * m_width + col];
+        }
+
+        uint8_t at(const int32_t row, const int32_t col, const uint8_t pad_value) const noexcept {
+            return row >= 0 && col >= 0 && row < m_height && col < m_width ?
+                m_data[static_cast<uint32_t>(row) * m_width + col] : pad_value;
+        }
+
+        Image& threshold(const uint8_t threshold) noexcept {
+            for (uint32_t idx = 0; idx < m_size; ++idx) {
+                m_data[idx] = m_data[idx] <= threshold ? 0 : 255;
+            }
+
+            return *this;
+        }
+
+        Image& absdiff(const Image& other) {
+            for (uint32_t idx = 0; idx < m_size; ++idx) {
+                m_data[idx] = std::abs(m_data[idx] - other.m_data[idx]);
+            }
+
+            return *this;
+        }
+
+       void save(const char *filename) const {
+            cimg_library::CImg<uint8_t> img_grey;
+            img_grey.assign(m_data, m_width, m_height);
+            img_grey.rotate(-90).save(filename);
+        }
+};
+
+template<uint16_t static_width, uint16_t static_height>
+class StaticImage : public Image {
+    private:
+        uint8_t m_internal_buff[static_width * static_height];
+
+    public:
+        StaticImage() noexcept :
+            Image(static_width, static_height, &m_internal_buff[0])
+            {}
+
+        StaticImage(uint8_t* const ext_img_buff) :
+            StaticImage()
+            {
+                std::memcpy(m_data, ext_img_buff, m_size);
+            }
+        
+        // polymorphic copy ctor
+        StaticImage(const Image& other) :
+            StaticImage()
+            {
+                assert(m_width == other.width() && m_height == other.height() &&
+                       "StaticImage cannot be copy-constructed from differently sized other image");
+                
+                std::memcpy(m_data, other.data(), m_size);
+            }
+        
+        // polymorphic copy assignment
+        StaticImage& operator=(const Image& other) {
+            if (this != &other) {
+                assert(m_width == other.width() && m_height == other.height() &&
+                       "Image cannot be copy-assigned from differently sized other image");
+
+                std::memcpy(m_data, other.data(), m_size);
+            }
+
+            return *this;
+        }
 };

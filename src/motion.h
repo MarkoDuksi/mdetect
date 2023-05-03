@@ -2,20 +2,42 @@
 
 #include <stdint.h>
 #include <vector>
-#include <memory>
 
-#include "bbox.h"
 #include "image.h"
+#include "convolutions.h"
+#include "bbox.h"
+
+#define M_MIN_BBOX_DIMENSION 30
 
 
+template<uint16_t static_img_width, uint16_t static_img_height>
 class MotionDetector {
     private:
         Image m_reference_img;
-        Image m_aux_img1;
-        Image m_aux_img2;
+        StaticImage<static_img_width, static_img_height> m_aux_img1;
+        StaticImage<static_img_width, static_img_height> m_aux_img2;
 
     public:
-        MotionDetector(Image&& img_reference, uint8_t* const scratchpad) noexcept;
+        MotionDetector(Image& img_reference) noexcept :
+            m_reference_img(img_reference)
+            {}
 
-        std::vector<bbox::BBox> detect(const Image& img);
+        std::vector<bbox::BBox> detect(const Image& img) {
+            // img.save("../output/input_orig.jpg");
+
+            m_aux_img1 = img;
+            // m_aux_img1.save("../output/input_copy.jpg");
+
+            m_aux_img1.absdiff(m_reference_img).threshold(127);
+            // m_aux_img1.save("../output/input_copy_absdiff_threshold.jpg");
+
+            // m_reference_img.save("../output/reference_orig.jpg");
+            m_reference_img = img;
+            // m_reference_img.save("../output/reference_new_from_input.jpg");
+
+            convolutions::dilate_13x13(m_aux_img1, m_aux_img2);
+            // m_aux_img2.save("../output/input_copy_absdiff_threshold_convolve.jpg");
+
+            return bbox::get_bboxes(m_aux_img2, M_MIN_BBOX_DIMENSION, m_aux_img1);
+        }
 };

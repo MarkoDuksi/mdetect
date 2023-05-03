@@ -4,13 +4,12 @@
 #include <filesystem>
 #include <vector>
 #include <algorithm>
-#include <utility>
 
 #include "CImg.h"
 #include "image.h"
 #include "convolutions.h"
-#include "bbox.h"
 #include "motion.h"
+#include "bbox.h"
 
 #define WIDTH_1024 1024
 #define HEIGHT_768 768
@@ -48,18 +47,14 @@ int main(int argc, char** argv) {
     cimg::CImg<uint8_t> img_rgb1;
     cimg::CImg<uint8_t> img_rgb2;
 
-    uint8_t downscaled_ref_img_buff[WIDTH_256 * HEIGHT_192];
-    uint8_t downscaled_img_buff[WIDTH_256 * HEIGHT_192];
-    uint8_t mdetector_scratchpad[2 * WIDTH_256 * HEIGHT_192];
-
     img_rgb1.assign(input_paths[0].c_str());
 
-    Image full_size_ref_img(&img_rgb1._data[WIDTH_1024 * HEIGHT_768], WIDTH_1024, HEIGHT_768);
-    Image downscaled_ref_img(downscaled_ref_img_buff, WIDTH_256, HEIGHT_192);
+    Image full_size_ref_img(WIDTH_1024, HEIGHT_768, &img_rgb1._data[WIDTH_1024 * HEIGHT_768]);
+    StaticImage<WIDTH_256, HEIGHT_192> downscaled_ref_img;
 
     convolutions::downscale_4x4(full_size_ref_img, downscaled_ref_img);
 
-    MotionDetector motion(std::move(downscaled_ref_img), mdetector_scratchpad);
+    MotionDetector<WIDTH_256, HEIGHT_192> motion(downscaled_ref_img);
     // int counter = 1;
     for (const auto& input_path : input_paths) {
         // if (counter++ < 372) continue;
@@ -68,8 +63,8 @@ int main(int argc, char** argv) {
 
         img_rgb2.assign(input_path.c_str());
 
-        Image full_size_img(&img_rgb2._data[WIDTH_1024 * HEIGHT_768], WIDTH_1024, HEIGHT_768);
-        Image downscaled_img(downscaled_img_buff, WIDTH_256, HEIGHT_192);
+        Image full_size_img(WIDTH_1024, HEIGHT_768, &img_rgb2._data[WIDTH_1024 * HEIGHT_768]);
+        StaticImage<WIDTH_256, HEIGHT_192> downscaled_img;
 
         convolutions::downscale_4x4(full_size_img, downscaled_img);
         
