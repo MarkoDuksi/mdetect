@@ -1,10 +1,12 @@
 #pragma once
 
-#include "image.h"
-
 #include <stdint.h>
 #include <cassert>
 
+#include "image.h"
+
+
+namespace convolutions {
 
 template<typename T>
 struct Kernel {
@@ -21,7 +23,8 @@ struct Kernel {
         anchor_X(anchor_X),
         anchor_Y(anchor_Y)
         {
-            assert(anchor_X < width && anchor_Y < height && "Kernel anchor cannot be positioned outside of the kernel");
+            assert(anchor_X < width && anchor_Y < height &&
+                   "Kernel anchor cannot be positioned outside of the kernel");
         }
 };
 
@@ -43,10 +46,15 @@ T stamp(const Image& image, const int32_t img_row, const int32_t img_col, const 
 
 template<typename T>
 void convolve(const Image& src_image, const Kernel<T>& kernel, const uint8_t stride_X, const uint8_t stride_Y, uint8_t (*postprocess)(T), Image& dst_image) {
-    uint32_t dst_idx = 0;
-    for (uint16_t dst_row = 0, src_row = 0; dst_row < dst_image.height; ++dst_row, src_row += stride_Y) {
-        for (uint16_t dst_col = 0, src_col = 0; dst_col < dst_image.width; ++dst_col, src_col += stride_X) {
-            dst_image[dst_idx++] = postprocess(stamp<T>(src_image, src_row, src_col, kernel));
+    for (uint16_t dst_row = 0, src_row = 0; dst_row < dst_image.height(); ++dst_row, src_row += stride_Y) {
+        for (uint16_t dst_col = 0, src_col = 0; dst_col < dst_image.width(); ++dst_col, src_col += stride_X) {
+            dst_image.at(dst_row, dst_col) = postprocess(stamp<T>(src_image, src_row, src_col, kernel));
         }
     }
 }
+
+void downscale_4x4(const Image& src_image, Image& dst_image);
+void dilate_13x13(const Image& src_image, Image& dst_image);
+void erode_13x13(const Image& src_image, Image& dst_image);
+
+}   // namespace convolutions

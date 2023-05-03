@@ -4,14 +4,18 @@
 #include <filesystem>
 #include <vector>
 #include <algorithm>
+#include <utility>
 
 #include "CImg.h"
+#include "image.h"
+#include "convolutions.h"
 #include "bbox.h"
 #include "motion.h"
 
 #define WIDTH_1024 1024
 #define HEIGHT_768 768
-#define MIN_BBOX_DIM 30
+#define WIDTH_256 256
+#define HEIGHT_192 192
 
 
 namespace cimg = cimg_library;
@@ -39,29 +43,42 @@ int main(int argc, char** argv) {
     char* input_dir = argv[1];
     char* output_dir = argv[2];
 
+    auto input_paths = getInputImgPaths(input_dir);
+
     cimg::CImg<uint8_t> img_rgb1;
     cimg::CImg<uint8_t> img_rgb2;
 
-    uint8_t* full_size_img;
-
-    auto input_paths = getInputImgPaths(input_dir);
+    uint8_t downscaled_ref_img_buff[WIDTH_256 * HEIGHT_192];
+    uint8_t downscaled_img_buff[WIDTH_256 * HEIGHT_192];
+    uint8_t mdetector_scratchpad[2 * WIDTH_256 * HEIGHT_192];
 
     img_rgb1.assign(input_paths[0].c_str());
-    full_size_img = &img_rgb1._data[WIDTH_1024 * HEIGHT_768];
 
-    MotionDetector motion(WIDTH_1024, HEIGHT_768, MIN_BBOX_DIM, full_size_img, full_size_img);
+    Image full_size_ref_img(&img_rgb1._data[WIDTH_1024 * HEIGHT_768], WIDTH_1024, HEIGHT_768);
+    Image downscaled_ref_img(downscaled_ref_img_buff, WIDTH_256, HEIGHT_192);
 
+    convolutions::downscale_4x4(full_size_ref_img, downscaled_ref_img);
+
+    MotionDetector motion(std::move(downscaled_ref_img), mdetector_scratchpad);
+    // int counter = 1;
     for (const auto& input_path : input_paths) {
+        // if (counter++ < 372) continue;
+
         std::cout << "processing image: " << input_path << std::endl;
 
         img_rgb2.assign(input_path.c_str());
-        full_size_img = &img_rgb2._data[WIDTH_1024 * HEIGHT_768];
-        auto bboxes = motion.detect(full_size_img);
+
+        Image full_size_img(&img_rgb2._data[WIDTH_1024 * HEIGHT_768], WIDTH_1024, HEIGHT_768);
+        Image downscaled_img(downscaled_img_buff, WIDTH_256, HEIGHT_192);
+
+        convolutions::downscale_4x4(full_size_img, downscaled_img);
+        
+        auto bboxes = motion.detect(downscaled_img);
 
         if (bboxes.size()) {
             // uint subframe_count = 1;
             for (auto bbox : bboxes) {
-                img_rgb2.draw_rectangle(4 * bbox.topleft_X, 4 * bbox.topleft_Y, 4 * (bbox.bottomright_X) - 1, 4 * (bbox.bottomright_Y) - 1, green, 1, ~0U);
+                img_rgb2.draw_rectangle(4 * bbox.topleft_X(), 4 * bbox.topleft_Y(), 4 * (bbox.bottomright_X()) - 1, 4 * (bbox.bottomright_Y()) - 1, green, 1, ~0U);
                 // img_rgb2.get_crop(4 * bbox.topleft_X, 4 * bbox.topleft_Y, 4 * (bbox.bottomright_X) - 1, 4 * (bbox.bottomright_Y) - 1)
                 //        .rotate(-90)
                 //        .save((std::string(output_dir) + "/" + input_path.stem().c_str() + "_" + std::to_string(subframe_count++) + ".jpg").c_str());
