@@ -7,7 +7,7 @@
 #include "transformations.h"
 #include "bbox.h"
 
-#define M_MIN_BBOX_DIMENSION 30
+#define M_MIN_BBOX_DIMENSION 16
 
 
 template<uint16_t static_img_width, uint16_t static_img_height>
@@ -36,7 +36,7 @@ class MotionDetector {
             m_reference_img = img;
             // m_reference_img.save("../output/reference_new_from_input.jpg");
 
-            transformations::dilate_13x13(m_aux_img1, m_aux_img2);
+            transformations::dilate_8x8(m_aux_img1, m_aux_img2);
             // m_aux_img2.save("../output/input_copy_absdiff_threshold_convolve.jpg");
 
             return bbox::get_bboxes(m_aux_img2, M_MIN_BBOX_DIMENSION, m_aux_img1);

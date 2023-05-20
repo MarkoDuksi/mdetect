@@ -4,8 +4,9 @@
 #include <algorithm>
 #include <stdexcept>
 
-
 #include "image.h"
+
+#define PADDING_VALUE_0 (uint8_t)0
 
 
 // public:
@@ -87,8 +88,8 @@ std::vector<bbox::BBox> bbox::get_bboxes(const Image& img, const uint16_t min_di
         for (uint16_t col = 0; col < aux_img.width(); ++col) {
             // if the current pixel value is non-zero
             if (aux_img.at(row, col)) {
-                const uint32_t& W_label = aux_img.at(row, col - 1, 0U);
-                const uint32_t& N_label = aux_img.at(row - 1, col, 0U);
+                const uint32_t& W_label = aux_img.at(row, col - 1, PADDING_VALUE_0);
+                const uint32_t& N_label = aux_img.at(row - 1, col, PADDING_VALUE_0);
                 const uint32_t& N_label_parent = labels_lookup[N_label];
                 // if W label is non-zero
                 if (W_label) {

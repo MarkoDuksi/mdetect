@@ -6,10 +6,6 @@
 #include "image.h"
 
 
-#define PADDING_VALUE_0 (uint8_t)0
-#define PADDING_SIZE_1 (uint8_t)1
-
-
 namespace bbox {
 
     class BBox {
