@@ -64,22 +64,6 @@ class Image {
                 m_data[static_cast<uint32_t>(row) * m_width + col] : pad_value;
         }
 
-        Image& threshold(const uint8_t threshold) noexcept {
-            for (uint32_t idx = 0; idx < m_size; ++idx) {
-                m_data[idx] = m_data[idx] <= threshold ? 0 : 255;
-            }
-
-            return *this;
-        }
-
-        Image& absdiff(const Image& other) {
-            for (uint32_t idx = 0; idx < m_size; ++idx) {
-                m_data[idx] = std::abs(m_data[idx] - other.m_data[idx]);
-            }
-
-            return *this;
-        }
-
        void save(const char *filename) const {
             cimg_library::CImg<uint8_t> img_grey;
             img_grey.assign(m_data, m_width, m_height);
@@ -103,7 +87,7 @@ class StaticImage : public Image {
                 std::memcpy(m_data, ext_img_buff, m_size);
             }
         
-        // polymorphic copy ctor
+        // copy/polymorphic ctor
         StaticImage(const Image& other) :
             StaticImage()
             {
@@ -113,7 +97,7 @@ class StaticImage : public Image {
                 std::memcpy(m_data, other.data(), m_size);
             }
         
-        // polymorphic copy assignment
+        // copy/polymorphic assignment
         StaticImage& operator=(const Image& other) {
             if (this != &other) {
                 assert(m_width == other.width() && m_height == other.height() &&

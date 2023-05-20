@@ -6,7 +6,7 @@
 #include "image.h"
 
 
-namespace convolutions {
+namespace transformations {
 
 template<typename T>
 struct Kernel {
@@ -53,8 +53,10 @@ void convolve(const Image& src_image, const Kernel<T>& kernel, const uint8_t str
     }
 }
 
+void threshold(Image& image, const uint8_t threshold) noexcept;
+void absdiff(Image& image, const Image& other);
 void downscale_4x4(const Image& src_image, Image& dst_image);
 void dilate_13x13(const Image& src_image, Image& dst_image);
 void erode_13x13(const Image& src_image, Image& dst_image);
 
-}   // namespace convolutions
+}   // namespace transformations

@@ -7,7 +7,7 @@
 
 #include "CImg.h"
 #include "image.h"
-#include "convolutions.h"
+#include "transformations.h"
 #include "motion.h"
 #include "bbox.h"
 
@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
     Image full_size_ref_img(WIDTH_1024, HEIGHT_768, &img_rgb1._data[WIDTH_1024 * HEIGHT_768]);
     StaticImage<WIDTH_256, HEIGHT_192> downscaled_ref_img;
 
-    convolutions::downscale_4x4(full_size_ref_img, downscaled_ref_img);
+    transformations::downscale_4x4(full_size_ref_img, downscaled_ref_img);
 
     MotionDetector<WIDTH_256, HEIGHT_192> motion(downscaled_ref_img);
     // int counter = 1;
@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
         Image full_size_img(WIDTH_1024, HEIGHT_768, &img_rgb2._data[WIDTH_1024 * HEIGHT_768]);
         StaticImage<WIDTH_256, HEIGHT_192> downscaled_img;
 
-        convolutions::downscale_4x4(full_size_img, downscaled_img);
+        transformations::downscale_4x4(full_size_img, downscaled_img);
         
         auto bboxes = motion.detect(downscaled_img);
 
