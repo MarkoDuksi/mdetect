@@ -13,7 +13,7 @@
 template<uint16_t static_img_width, uint16_t static_img_height>
 class MotionDetector {
     private:
-        Image m_reference_img;
+        StaticImage<static_img_width, static_img_height> m_reference_img;
         StaticImage<static_img_width, static_img_height> m_aux_img1;
         StaticImage<static_img_width, static_img_height> m_aux_img2;
 
@@ -32,6 +32,6 @@ class MotionDetector {
 
             transform::dilate_8x8(m_aux_img1, m_aux_img2);
 
-            return bbox::get_bboxes(m_aux_img2, M_MIN_BBOX_DIMENSION, m_aux_img1);
+            return bbox::get_bboxes(m_aux_img2, M_MIN_BBOX_DIMENSION, m_aux_img2);
         }
 };
