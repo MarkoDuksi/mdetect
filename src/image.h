@@ -6,7 +6,7 @@
 #include <cassert>
 #include <string>
 
-#include "CImg.h"
+#include "CImg.h" // temp, for debugging
 
 
 class Image {
@@ -53,10 +53,11 @@ class Image {
                 m_data[static_cast<uint32_t>(row) * width + col] : pad_value;
         }
 
-       void save(const char *filename) const {
+       // temp, for debugging
+       void save(const char *filename, const int number = -1, const uint digits = 2) const {
             cimg_library::CImg<uint8_t> img_grey;
             img_grey.assign(m_data, width, height);
-            img_grey.rotate(-90).save(filename);
+            img_grey.rotate(-90).save(filename, number, digits);
         }
 };
 
