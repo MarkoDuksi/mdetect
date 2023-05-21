@@ -51,10 +51,11 @@ int main(int argc, char** argv) {
 
     Image full_size_ref_img(WIDTH_1024, HEIGHT_768, &img_rgb1._data[WIDTH_1024 * HEIGHT_768]);
     StaticImage<WIDTH_128, HEIGHT_96> downscaled_ref_img;
+    StaticImage<WIDTH_128, HEIGHT_96> downscaled_img;
 
     transform::downscale_8x8(full_size_ref_img, downscaled_ref_img);
-
     MotionDetector<WIDTH_128, HEIGHT_96> motion(downscaled_ref_img);
+
     // int counter = 1;
     for (const auto& input_path : input_paths) {
         // if (counter++ < 372) continue;
@@ -64,8 +65,6 @@ int main(int argc, char** argv) {
         img_rgb2.assign(input_path.c_str());
 
         Image full_size_img(WIDTH_1024, HEIGHT_768, &img_rgb2._data[WIDTH_1024 * HEIGHT_768]);
-        StaticImage<WIDTH_128, HEIGHT_96> downscaled_img;
-
         transform::downscale_8x8(full_size_img, downscaled_img);
         
         auto bboxes = motion.detect(downscaled_img);
