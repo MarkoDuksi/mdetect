@@ -25,7 +25,13 @@ class Image {
             size(static_cast<uint32_t>(static_width) * static_height)
             {}
 
-        // copy assignment
+        // shallow copy ctor
+        Image(const Image& other) noexcept = default;
+
+        // move ctor = delete
+        Image(Image&& other) noexcept = delete;
+
+        // deep copy assignment
         Image& operator=(const Image& other) {
             if (this != &other) {
                 assert(width == other.width && height == other.height &&
@@ -37,8 +43,8 @@ class Image {
             return *this;
         }
 
-        // reenable shallow copy
-        Image(const Image& other) noexcept = default;
+        // move assignment = delete
+        Image& operator=(Image&& other) noexcept = delete;
 
         uint8_t* data() const noexcept {
             return m_data;
@@ -87,6 +93,9 @@ class StaticImage : public Image {
                 std::memcpy(m_data, other.data(), size);
             }
         
+        // move ctor = delete
+        StaticImage(StaticImage&& other) noexcept = delete;
+
         // copy/polymorphic assignment
         StaticImage& operator=(const Image& other) {
             if (this != &other) {
@@ -98,4 +107,8 @@ class StaticImage : public Image {
 
             return *this;
         }
+
+        // move assignment = delete
+        StaticImage& operator=(StaticImage&& other) noexcept = delete;
+
 };
