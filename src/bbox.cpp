@@ -70,7 +70,7 @@ void bbox::BBox::merge(const BBox& other) {
 
 
 std::vector<bbox::BBox> bbox::get_bboxes(const Image& img, const uint16_t min_dimension, Image& aux_img) {
-    assert(img.width() == aux_img.width() && img.height() == aux_img.height() &&
+    assert(img.width == aux_img.width && img.height == aux_img.height &&
            "bbox::get_bboxes requires same-sized aux_img for a scratchpad");
 
     aux_img = img;
@@ -84,8 +84,8 @@ std::vector<bbox::BBox> bbox::get_bboxes(const Image& img, const uint16_t min_di
     // dummy 0-th entry bbox
     std::vector<BBox> bboxes { {0, 0} };
 
-    for (uint16_t row = 0; row < aux_img.height(); ++row) {
-        for (uint16_t col = 0; col < aux_img.width(); ++col) {
+    for (uint16_t row = 0; row < aux_img.height; ++row) {
+        for (uint16_t col = 0; col < aux_img.width; ++col) {
             // if the current pixel value is non-zero
             if (aux_img.at(row, col)) {
                 const uint32_t& W_label = aux_img.at(row, col - 1, PADDING_VALUE_0);

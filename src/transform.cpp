@@ -41,15 +41,15 @@ static const transform::Kernel flat_8x8_kernel(flat_8x8_kernel_elements, 8, 8, 0
 static const transform::Kernel round_13x13_kernel(round_13x13_kernel_elements, 13, 13, 6, 6);
 
 void transform::threshold(Image& image, const uint8_t threshold) noexcept {
-    for (uint32_t idx = 0; idx < image.size(); ++idx) {
+    for (uint32_t idx = 0; idx < image.size; ++idx) {
         image.data()[idx] = image.data()[idx] <= threshold ? 0 : 255;
     }
 }
 
 void transform::absdiff(Image& image, const Image& other) {
-    assert(image.width() == other.width() && image.height() == other.height() &&
+    assert(image.width == other.width && image.height == other.height &&
         "Element-wise abbsdiff cannot operate on differently sized images");
-    for (uint32_t idx = 0; idx < image.size(); ++idx) {
+    for (uint32_t idx = 0; idx < image.size; ++idx) {
         image.data()[idx] = std::abs(image.data()[idx] - other.data()[idx]);
     }
 }
