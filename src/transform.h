@@ -6,7 +6,7 @@
 #include "image.h"
 
 
-namespace transformations {
+namespace transform {
 
 template<typename T>
 struct Kernel {
@@ -61,4 +61,4 @@ void dilate_8x8(const Image& src_image, Image& dst_image);
 void dilate_13x13(const Image& src_image, Image& dst_image);
 void erode_13x13(const Image& src_image, Image& dst_image);
 
-}   // namespace transformations
+}   // namespace transform

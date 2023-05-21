@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "image.h"
-#include "transformations.h"
+#include "transform.h"
 #include "bbox.h"
 
 #define M_MIN_BBOX_DIMENSION 16
@@ -23,21 +23,14 @@ class MotionDetector {
             {}
 
         std::vector<bbox::BBox> detect(const Image& img) {
-            // img.save("../output/input_orig.jpg");
-
             m_aux_img1 = img;
-            // m_aux_img1.save("../output/input_copy.jpg");
 
-            transformations::absdiff(m_aux_img1, m_reference_img);
-            transformations::threshold(m_aux_img1, 127);
-            // m_aux_img1.save("../output/input_copy_absdiff_threshold.jpg");
+            transform::absdiff(m_aux_img1, m_reference_img);
+            transform::threshold(m_aux_img1, 127);
 
-            // m_reference_img.save("../output/reference_orig.jpg");
             m_reference_img = img;
-            // m_reference_img.save("../output/reference_new_from_input.jpg");
 
-            transformations::dilate_8x8(m_aux_img1, m_aux_img2);
-            // m_aux_img2.save("../output/input_copy_absdiff_threshold_convolve.jpg");
+            transform::dilate_8x8(m_aux_img1, m_aux_img2);
 
             return bbox::get_bboxes(m_aux_img2, M_MIN_BBOX_DIMENSION, m_aux_img1);
         }
