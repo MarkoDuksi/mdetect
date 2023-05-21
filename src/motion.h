@@ -7,7 +7,7 @@
 #include "transform.h"
 #include "bbox.h"
 
-#define M_MIN_BBOX_DIMENSION 16
+#define M_MIN_BBOX_DIMENSION static_cast<uint16_t>(16)
 
 
 template<uint16_t static_img_width, uint16_t static_img_height>

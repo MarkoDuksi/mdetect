@@ -1,12 +1,12 @@
 #include "bbox.h"
 
 #include <cassert>
-#include <algorithm>
 #include <stdexcept>
+#include <algorithm>
 
 #include "image.h"
 
-#define PADDING_VALUE_0 (uint8_t)0
+#define PADDING_VALUE_0 static_cast<uint8_t>(0)
 
 
 // public:

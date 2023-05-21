@@ -11,10 +11,10 @@
 #include "motion.h"
 #include "bbox.h"
 
-#define WIDTH_1024 1024
-#define HEIGHT_768 768
-#define WIDTH_128 128
-#define HEIGHT_96 96
+#define WIDTH_1024 static_cast<uint16_t>(1024)
+#define HEIGHT_768 static_cast<uint16_t>(768)
+#define WIDTH_128 static_cast<uint16_t>(128)
+#define HEIGHT_96 static_cast<uint16_t>(96)
 
 
 namespace cimg = cimg_library;
