@@ -95,8 +95,8 @@ std::vector<bbox::BBox> bbox::get_bboxes(const Image& img, const uint16_t min_di
                 if (W_label) {
                     // if N label's parent is non-zero and different to W label
                     if (N_label_parent && (N_label_parent != W_label)) {
-                        const uint32_t& smaller = N_label_parent < W_label ? N_label_parent : W_label;
-                        const uint32_t& larger = N_label_parent > W_label ? N_label_parent : W_label;
+                        const uint32_t& smaller = (N_label_parent < W_label) ? N_label_parent : W_label;
+                        const uint32_t& larger = (N_label_parent > W_label) ? N_label_parent : W_label;
                         // assign smaller label to the current pixel
                         aux_img.at(row, col) = smaller;
                         // make larger label resolve to smaller label for its parent

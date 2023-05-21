@@ -42,7 +42,7 @@ static const transform::Kernel round_13x13_kernel(round_13x13_kernel_elements, 1
 
 void transform::threshold(Image& image, const uint8_t threshold) noexcept {
     for (uint32_t idx = 0; idx < image.size; ++idx) {
-        image.data()[idx] = image.data()[idx] <= threshold ? 0 : 255;
+        image.data()[idx] = (image.data()[idx] <= threshold) ? 0 : 255;
     }
 }
 
@@ -75,6 +75,6 @@ void transform::dilate_13x13(const Image& src_image, Image& dst_image) {
 }
 
 void transform::erode_13x13(const Image& src_image, Image& dst_image) {
-    auto postprocess = [](float x) -> uint8_t { return x < 120 * 255 ? 0 : 255; };
+    auto postprocess = [](float x) -> uint8_t { return (x < 120 * 255) ? 0 : 255; };
     convolve<float>(src_image, round_13x13_kernel, 1, 1, postprocess, dst_image);
 }
