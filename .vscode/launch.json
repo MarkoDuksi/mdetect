@@ -10,8 +10,8 @@
         "request": "launch",
         "program": "${workspaceFolder}/bin/debug/main.out",
         "args": [
-            "${workspaceFolder}/input/label_TURNED_OVER/1",
-            "${workspaceFolder}/output"
+            "${workspaceFolder}/test_imgs/input",
+            "${workspaceFolder}/test_imgs/output"
         ],
         "stopAtEntry": false,
         "cwd": "${fileDirname}",

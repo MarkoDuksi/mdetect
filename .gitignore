@@ -1,6 +1,5 @@
 .deps
 obj
 bin
-output*
-input
+test_imgs
 *.nogit

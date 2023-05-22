@@ -26,7 +26,8 @@
 			"string_view": "cpp",
 			"deque": "cpp",
 			"string": "cpp",
-			"unordered_map": "cpp"
+			"unordered_map": "cpp",
+			"algorithm": "cpp"
 		},
 		"C_Cpp.default.includePath": [
 			"include"
@@ -36,8 +37,8 @@
 				"cwd": "/home/dule/Wrk/C++/Images/",
 				"binaryPath": "/home/dule/Wrk/C++/Images/bin/debug/main.out",
 				"binaryArgs": [
-					"input/label_TURNED_OVER/1",
-					"output"
+					"test_imgs/input",
+					"test_imgs/output"
 				]
 			}
 		],
