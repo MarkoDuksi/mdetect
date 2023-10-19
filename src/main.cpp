@@ -6,10 +6,10 @@
 #include <algorithm>
 
 #include "CImg.h"
-#include "Image.h"
-#include "transform.h"
 #include "MotionDetector.h"
 #include "BoundingBox.h"
+#include "Image.h"
+#include "transform.h"
 
 #define WIDTH_1024 static_cast<uint16_t>(1024)
 #define HEIGHT_768 static_cast<uint16_t>(768)

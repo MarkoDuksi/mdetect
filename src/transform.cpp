@@ -8,31 +8,8 @@
 
 namespace {
 
-const float flat_8x8_kernel_elements[] {
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1
-};
-
-const float flat_9x9_kernel_elements[] {
-    1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1
-};
-
-const Kernel flat_8x8_kernel(flat_8x8_kernel_elements, 8, 8, 0, 0);
-const Kernel flat_9x9_kernel(flat_9x9_kernel_elements, 9, 9, 4, 4);
+const Kernel flat_8x8_kernel(1, 8, 8, 0, 0);
+const Kernel flat_9x9_kernel(1, 9, 9, 4, 4);
 
 }  // anonymous namespace
 
@@ -58,12 +35,12 @@ void transform::threshold(Image& image, const uint8_t threshold) noexcept {
 
 void transform::downscale_8x8(const Image& src_image, Image& dst_image) {
 
-    auto postprocess = [](float x) { return static_cast<uint8_t>(x / 64); };
+    auto postprocess = [](int x) -> uint8_t { return x / 64; };
     flat_8x8_kernel.convolve(src_image, 8, 8, postprocess, dst_image);
 }
 
 void transform::dilate_9x9(const Image& src_image, Image& dst_image) {
 
-    auto postprocess = [](float x) -> uint8_t { return !x ? 0 : 255; };
+    auto postprocess = [](int x) -> uint8_t { return !x ? 0 : 255; };
     flat_9x9_kernel.convolve(src_image, 1, 1, postprocess, dst_image);
 }
