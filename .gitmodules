@@ -1,0 +1,3 @@
+[submodule "submodules/mdjpeg"]
+	path = submodules/mdjpeg
+	url = git@github.com:MarkoDuksi/mdjpeg.git
