@@ -38,27 +38,7 @@ struct BoundingBox {
             return m_bottomright_Y - m_topleft_Y;
         }
 
-        uint16_t topleft_X() const noexcept {
-
-            return m_topleft_X;
-        }
-
-        uint16_t topleft_Y() const noexcept {
-
-            return m_topleft_Y;
-        }
-
-        uint16_t bottomright_X() const noexcept {
-
-            return m_bottomright_X;
-        }
-
-        uint16_t bottomright_Y() const noexcept {
-
-            return m_bottomright_Y;
-        }
-
-        void merge(const BoundingBox& other) {
+        void merge(const BoundingBox& other) noexcept {
 
             m_topleft_X = std::min(m_topleft_X, other.m_topleft_X);
             m_topleft_Y = std::min(m_topleft_Y, other.m_topleft_Y);
@@ -67,10 +47,38 @@ struct BoundingBox {
             m_bottomright_Y = std::max(m_bottomright_Y, other.m_bottomright_Y);
         }
 
+        bool expand_to_square(const BoundingBox& outer_bounds) {
+
+            // if expanding would grow the bounding box outside of `outer_bounds`
+            if (std::max(width(), height()) > std::min(outer_bounds.width(), outer_bounds.height())) {
+
+                return false;
+            }
+
+            // if width should match height
+            if (width() < height()) {
+
+                m_topleft_X = std::max(0, m_topleft_X - static_cast<int>((height() - width()) / 2.0f + 0.5f));
+                m_bottomright_X = std::min(static_cast<int>(outer_bounds.m_bottomright_X), m_topleft_X + height());
+                m_topleft_X = m_bottomright_X - height();
+            }
+
+            // if height should match width
+            else if (height() < width()) {
+
+                m_topleft_Y = std::max(0, m_topleft_Y - static_cast<int>((width() - height()) / 2.0f + 0.5f));
+                m_bottomright_Y = std::min(static_cast<int>(outer_bounds.m_bottomright_Y), m_topleft_Y + width());
+                m_topleft_Y = m_bottomright_Y - width();
+            }
+
+            return true;
+        }
+
     private:
 
         uint16_t m_topleft_X {};
         uint16_t m_topleft_Y {};
         uint16_t m_bottomright_X {};
         uint16_t m_bottomright_Y {};
+
 };

@@ -1,0 +1,1 @@
+../submodules/mdjpeg/obj/library/mdjpeg.h

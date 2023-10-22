@@ -5,8 +5,8 @@
 #include <cstring>
 #include <cstdlib>
 #include <string>
-
-#include "CImg.h" // temp, for debugging
+#include <filesystem>
+#include <fstream>
 
 
 class Image {
@@ -20,7 +20,7 @@ class Image {
         Image(const uint16_t width, const uint16_t height, uint8_t* const ptr_data) noexcept :
             width(width),
             height(height),
-            size(static_cast<uint32_t>(width) * height),
+            size(width * height),
             m_data(ptr_data)
             {}
 
@@ -54,22 +54,41 @@ class Image {
 
         uint8_t& at(const uint16_t row, const uint16_t col) const {
 
-            return m_data[static_cast<uint32_t>(row) * width + col];
+            return m_data[row * width + col];
         }
 
         uint8_t at(const int32_t row, const int32_t col, const uint8_t pad_value) const noexcept {
 
             return (row >= 0 && col >= 0 && row < height && col < width) ?
-                m_data[static_cast<uint32_t>(row) * width + col] : pad_value;
+                m_data[row * width + col] : pad_value;
         }
 
-       // temp, for debugging
-       void save(const char *filename, const int number = -1, const uint digits = 2) const {
+       bool save_as_pgm(const std::filesystem::path& file_path) {
 
-            cimg_library::CImg<uint8_t> img_grey;
+            std::ofstream file(file_path);
 
-            img_grey.assign(m_data, width, height);
-            img_grey.rotate(-90).save(filename, number, digits);
+            if (!file.is_open()) {
+
+                return false;
+            }
+
+            file << "P2\n" << width << " " << height << " " << 255 << "\n";
+
+            uint idx = 0;
+            for (uint row = 0; row < height; ++row) {
+
+                for (uint col = 0; col < width; ++col) {
+
+                    file << static_cast<uint>(m_data[idx++]) << " ";
+                }
+
+                file << "\n";
+            }
+
+            file << std::endl;
+            file.close();
+
+            return true;
         }
 
     protected:
@@ -88,7 +107,9 @@ class StaticImage : public Image {
         
         // conversion assignment op
         StaticImage& operator=(const Image& other) {
+
             if (this != &other) {
+
                 assert(width == other.width && height == other.height &&
                        "Image cannot be copy-assigned from differently sized other image.");
 

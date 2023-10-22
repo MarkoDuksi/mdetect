@@ -15,9 +15,10 @@ class MotionDetector {
 
     public:
 
-        MotionDetector(const Image& img_reference) noexcept :
-            m_reference_img(img_reference)
-            {}
+        MotionDetector(const Image& img_reference) noexcept {
+
+            m_reference_img = img_reference;
+        }
 
         void set_reference(const Image& img_reference) {
 
@@ -28,9 +29,9 @@ class MotionDetector {
 
             m_mask = img;
 
-            transform::absdiff(m_mask, m_reference_img);
-            transform::threshold(m_mask, 127);
-            transform::dilate_9x9(m_mask, m_aux);
+            mdetect_transform::absdiff(m_mask, m_reference_img);
+            mdetect_transform::threshold(m_mask, 127);
+            mdetect_transform::dilate_13x13(m_mask, m_aux);
 
             m_bboxes.fill(BoundingBox());
             m_labels_lookup.fill(0);
@@ -50,7 +51,7 @@ class MotionDetector {
 
                         uint8_t N_label = m_aux.at(row - 1, col, padding_value);
 
-                        // resolve N_label to it's parent label
+                        // resolve N_label to its parent label
                         N_label = m_labels_lookup[N_label];
 
                         // if W label is non-zero
@@ -116,6 +117,7 @@ class MotionDetector {
 
             for (int i = 1; i < next_label; ++i) {
 
+                // do not consider labels that do not point to themselves in the lookup table
                 if (m_labels_lookup[i] != i) {
 
                     temp = BoundingBox();
@@ -140,7 +142,7 @@ class MotionDetector {
             return m_mask;
         }
 
-        std::optional<BoundingBox> get_bbox() {
+        std::optional<BoundingBox> get_bounding_box() {
 
             if (std::min(m_bboxes[m_next_bbox].height(), m_bboxes[m_next_bbox].width()) > 1) {
 
@@ -157,7 +159,7 @@ class MotionDetector {
 
     private:
 
-        Image m_reference_img;
+        StaticImage<IMG_WIDTH, IMG_HEIGHT> m_reference_img;
         StaticImage<IMG_WIDTH, IMG_HEIGHT> m_aux;
         StaticImage<IMG_WIDTH, IMG_HEIGHT> m_mask;
 
