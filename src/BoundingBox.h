@@ -11,16 +11,21 @@ struct BoundingBox {
 
     public:
 
+        uint16_t topleft_X {};
+        uint16_t topleft_Y {};
+        uint16_t bottomright_X {};
+        uint16_t bottomright_Y {};
+
         BoundingBox (const uint16_t topleft_X = 0, const uint16_t topleft_Y = 0, const uint16_t bottomright_X = 0, const uint16_t bottomright_Y = 0) noexcept :
-            m_topleft_X(topleft_X),
-            m_topleft_Y(topleft_Y),
-            m_bottomright_X(bottomright_X ? bottomright_X : topleft_X + 1),
-            m_bottomright_Y(bottomright_Y ? bottomright_Y : topleft_Y + 1)
+            topleft_X(topleft_X),
+            topleft_Y(topleft_Y),
+            bottomright_X(bottomright_X ? bottomright_X : topleft_X + 1),
+            bottomright_Y(bottomright_Y ? bottomright_Y : topleft_Y + 1)
             {
-                assert (m_bottomright_X != 0 && "BoundingBox out of bounds (bottomright_X overflow)");
-                assert (m_bottomright_Y != 0 && "BoundingBox out of bounds (bottomright_Y overflow)");
-                assert (m_topleft_X < m_bottomright_X && "BoundingBox out of bounds (topleft_X >= bottomleft_X)");
-                assert (m_topleft_Y < m_bottomright_Y && "BoundingBox out of bounds (topleft_Y >= bottomleft_Y)");
+                assert (this->bottomright_X != 0 && "BoundingBox out of bounds (bottomright_X overflow)");
+                assert (this->bottomright_Y != 0 && "BoundingBox out of bounds (bottomright_Y overflow)");
+                assert (this->topleft_X < this->bottomright_X && "BoundingBox out of bounds (topleft_X >= bottomleft_X)");
+                assert (this->topleft_Y < this->bottomright_Y && "BoundingBox out of bounds (topleft_Y >= bottomleft_Y)");
             }
 
         bool operator>(const BoundingBox& other) const noexcept {
@@ -30,21 +35,21 @@ struct BoundingBox {
 
         uint16_t width() const noexcept {
 
-            return m_bottomright_X - m_topleft_X;
+            return bottomright_X - topleft_X;
         }
 
         uint16_t height() const noexcept {
 
-            return m_bottomright_Y - m_topleft_Y;
+            return bottomright_Y - topleft_Y;
         }
 
         void merge(const BoundingBox& other) noexcept {
 
-            m_topleft_X = std::min(m_topleft_X, other.m_topleft_X);
-            m_topleft_Y = std::min(m_topleft_Y, other.m_topleft_Y);
+            topleft_X = std::min(topleft_X, other.topleft_X);
+            topleft_Y = std::min(topleft_Y, other.topleft_Y);
 
-            m_bottomright_X = std::max(m_bottomright_X, other.m_bottomright_X);
-            m_bottomright_Y = std::max(m_bottomright_Y, other.m_bottomright_Y);
+            bottomright_X = std::max(bottomright_X, other.bottomright_X);
+            bottomright_Y = std::max(bottomright_Y, other.bottomright_Y);
         }
 
         bool expand_to_square(const BoundingBox& outer_bounds) {
@@ -58,27 +63,19 @@ struct BoundingBox {
             // if width should match height
             if (width() < height()) {
 
-                m_topleft_X = std::max(0, m_topleft_X - static_cast<int>((height() - width()) / 2.0f + 0.5f));
-                m_bottomright_X = std::min(static_cast<int>(outer_bounds.m_bottomright_X), m_topleft_X + height());
-                m_topleft_X = m_bottomright_X - height();
+                topleft_X = std::max(0, topleft_X - static_cast<int>((height() - width()) / 2.0f + 0.5f));
+                bottomright_X = std::min(static_cast<int>(outer_bounds.bottomright_X), topleft_X + height());
+                topleft_X = bottomright_X - height();
             }
 
             // if height should match width
             else if (height() < width()) {
 
-                m_topleft_Y = std::max(0, m_topleft_Y - static_cast<int>((width() - height()) / 2.0f + 0.5f));
-                m_bottomright_Y = std::min(static_cast<int>(outer_bounds.m_bottomright_Y), m_topleft_Y + width());
-                m_topleft_Y = m_bottomright_Y - width();
+                topleft_Y = std::max(0, topleft_Y - static_cast<int>((width() - height()) / 2.0f + 0.5f));
+                bottomright_Y = std::min(static_cast<int>(outer_bounds.bottomright_Y), topleft_Y + width());
+                topleft_Y = bottomright_Y - width();
             }
 
             return true;
         }
-
-    private:
-
-        uint16_t m_topleft_X {};
-        uint16_t m_topleft_Y {};
-        uint16_t m_bottomright_X {};
-        uint16_t m_bottomright_Y {};
-
 };

@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
 
     if (argc != 3) {
 
-        std::cout << "usage: " << argv[0] << " input_directory output_directory" << std::endl;
+        std::cout << "usage: " << argv[0] << " input_directory output_directory\n";
 
         exit(1);
     }
@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
 
     for (const auto& input_path : input_paths) {
 
-        std::cout << "processing image: " << input_path << std::endl;
+        std::cout << "processing image: " << input_path << "\n";
 
         const auto [buf, size] = read_raw_jpeg_from_file(input_path);
         JpegDecoder decoder(buf, size);
