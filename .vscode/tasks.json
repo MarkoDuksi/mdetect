@@ -63,7 +63,7 @@
 				"kind": "build",
 				"isDefault": false
 			},
-			"detail": "clean all objs, deps, bins"
+			"detail": "clean all objs, deps, bins, tests output"
 		},
 		{
 			"type": "process",
@@ -96,6 +96,22 @@
 				"isDefault": false
 			},
 			"detail": "clean release objs, deps, bin"
+		},
+		{
+			"type": "process",
+			"label": "GNU make: clean-tests",
+			"command": "/usr/bin/make",
+			"args": [
+				"clean-tests"
+			],
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"detail": "clean tests output"
 		}
 	]
 }
