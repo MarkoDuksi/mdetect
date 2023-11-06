@@ -42,10 +42,10 @@ int main(int argc, char** argv) {
     const auto input_paths = get_input_img_paths(input_dir);
     const auto [buf, size] = read_raw_jpeg_from_file(input_paths[0]);
 
-    {
-        JpegDecoder ref_decoder(buf, size);
-        ref_decoder.dc_luma_decode(downscaled_img.data(), 0, 0, downscaled_width, downscaled_height);
-    }
+    JpegDecoder decoder;
+
+    decoder.assign(buf, size);
+    decoder.dc_luma_decode(downscaled_img.data(), 0, 0, downscaled_width, downscaled_height);
 
     MotionDetector<downscaled_width, downscaled_height> motion(downscaled_img);
     DownscalingBlockWriter<dest_square_width, dest_square_height> writer;
@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
         std::cout << "processing image: " << input_path << "\n";
 
         const auto [buf, size] = read_raw_jpeg_from_file(input_path);
-        JpegDecoder decoder(buf, size);
+        decoder.assign(buf, size);
         decoder.dc_luma_decode(downscaled_img.data(), 0, 0, downscaled_width, downscaled_height);
 
         motion.detect(downscaled_img);
