@@ -28,7 +28,23 @@ int main(int argc, char** argv) {
     }
 
     std::filesystem::path input_dir = argv[1];
+
+    if (!std::filesystem::is_directory(input_dir)) {
+
+        std::cerr << "invalid input directory: " << argv[1] << "\n";
+
+        exit(1);
+    }
+
+    const auto input_paths = get_input_img_paths(input_dir);
+
+    if (input_paths.size() == 0) {
+
+        exit(0);
+    }
+
     std::filesystem::path output_dir = argv[2];
+    std::filesystem::create_directories(output_dir);
 
     constexpr uint16_t width = 1024;
     constexpr uint16_t height = 768;
@@ -39,7 +55,6 @@ int main(int argc, char** argv) {
 
     StaticImage<downscaled_width, downscaled_height> downscaled_img;
 
-    const auto input_paths = get_input_img_paths(input_dir);
     const auto [buf, size] = read_raw_jpeg_from_file(input_paths[0]);
 
     JpegDecoder decoder;
