@@ -1,22 +1,14 @@
-#include <filesystem>
-#include <fstream>
-#include <ios>
 #include <iostream>
-#include <vector>
-#include <algorithm>
-#include <utility>
-#include <string>
 #include <stdint.h>
+#include <sys/types.h>
 
 #include "mdjpeg.h"
 
+#include "tests/test-utils.h"
 #include "MotionDetector.h"
 #include "BoundingBox.h"
 #include "Image.h"
 
-
-std::vector<std::filesystem::path> get_input_img_paths(const std::filesystem::path& input_dir);
-std::pair<uint8_t*, size_t> read_raw_jpeg_from_file(const std::filesystem::path& file_path);
 
 int main(int argc, char** argv) {
 
@@ -36,7 +28,7 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
-    const auto input_paths = get_input_img_paths(input_dir);
+    const auto input_paths = mdetect_test_utils::get_input_img_paths(input_dir);
 
     if (input_paths.size() == 0) {
 
@@ -55,7 +47,7 @@ int main(int argc, char** argv) {
 
     StaticImage<downscaled_width, downscaled_height> downscaled_img;
 
-    const auto [buf, size] = read_raw_jpeg_from_file(input_paths[0]);
+    const auto [buf, size] = mdetect_test_utils::read_raw_jpeg_from_file(input_paths[0]);
 
     JpegDecoder decoder;
 
@@ -71,7 +63,7 @@ int main(int argc, char** argv) {
 
         std::cout << "processing image: " << input_path << "\n";
 
-        const auto [buf, size] = read_raw_jpeg_from_file(input_path);
+        const auto [buf, size] = mdetect_test_utils::read_raw_jpeg_from_file(input_path);
         decoder.assign(buf, size);
         decoder.dc_luma_decode(downscaled_img.data(), 0, 0, downscaled_width, downscaled_height);
 
@@ -99,51 +91,4 @@ int main(int argc, char** argv) {
     }
 
     return 0;
-}
-
-std::vector<std::filesystem::path> get_input_img_paths(const std::filesystem::path& input_dir) {
-
-    std::vector<std::filesystem::path> input_paths;
-
-    for (const auto& dir_entry : std::filesystem::directory_iterator(input_dir)){
-
-        if (dir_entry.path().extension() == ".jpg") {
-
-            input_paths.push_back(dir_entry.path());
-        }
-    }
-
-    std::sort(input_paths.begin(), input_paths.end());
-
-    return input_paths;
-}
-
-std::pair<uint8_t*, size_t> read_raw_jpeg_from_file(const std::filesystem::path& file_path) {
-
-    std::ifstream file(file_path, std::ios::in | std::ios::binary | std::ios::ate);
-    
-    if (!file.is_open()) {
-
-        std::cout << "Error opening input file: " << file_path.c_str() << "\n";
-
-        return {nullptr, 0};
-    }
-
-    const auto size = file.tellg();
-    char* raw_jpeg = new char[size];
-
-    file.seekg(0);
-    file.read(raw_jpeg, size);
-
-    if (file.gcount() != size) {
-
-        std::cout << "Error reading input file: " << file_path.c_str() << "\n";
-        file.close();
-
-        return {nullptr, 0};
-    }
-
-    file.close();
-
-    return {reinterpret_cast<uint8_t*>(raw_jpeg), size};
 }
