@@ -14,7 +14,7 @@ CXX_RELEASE_FLAGS = -O3 -DNDEBUG -DRELEASE
 DEP_FLAGS = -MT $@ -MMD -MP -MF $(DEP_DIR)/$(*D)/$(*F).$(BUILD_TYPE).d.tmp
 LIB_INCLUDE_DIRS_FLAGS = $(addprefix -L, $(LIB_INCLUDE_DIRS))
 HDR_INCLUDE_DIRS_FLAGS = $(addprefix -I, $(HDR_INCLUDE_DIRS))
-LD_FLAGS = -lmdjpeg
+LD_FLAGS = -lmdjpeg -lfmt
 
 PRECOMPILE = @mkdir -p $(@D) $(@D:$(OBJ_DIR)/$(BUILD_TYPE)%=$(DEP_DIR)%)
 POSTCOMPILE = @mv -f $(DEP_DIR)/$(*D)/$(*F).$(BUILD_TYPE).d.tmp $(DEP_DIR)/$(*D)/$(*F).$(BUILD_TYPE).d && touch $@

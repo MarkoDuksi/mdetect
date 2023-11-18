@@ -1,39 +1,39 @@
 #include "transform.h"
 
-#include <cassert>
+#include <cmath>
 
 #include "Kernel.h"
 #include "Image.h"
 
 
-namespace {
+void mdetect_transform::absdiff(Image &dst, const Image &src1, const Image &src2) noexcept {
 
-const Kernel flat_13x13_kernel(1, 13, 13, 6, 6);
+    for (uint32_t idx = 0; idx < dst.width * dst.height; ++idx) {
 
-}  // anonymous namespace
-
-
-void mdetect_transform::absdiff(Image& image, const Image& other) {
-
-    assert(image.width == other.width && image.height == other.height &&
-        "Element-wise abbsdiff cannot operate on differently sized images");
-
-    for (uint32_t idx = 0; idx < image.size; ++idx) {
-
-        image.data()[idx] = std::abs(image.data()[idx] - other.data()[idx]);
+        dst.data()[idx] = std::abs(src1.data()[idx] - src2.data()[idx]);
     }
 }
 
-void mdetect_transform::threshold(Image& image, const uint8_t threshold) noexcept {
+void mdetect_transform::threshold(Image& dst, const Image& src, const uint8_t threshold) noexcept {
 
-    for (uint32_t idx = 0; idx < image.size; ++idx) {
+    for (uint32_t idx = 0; idx < dst.width * dst.height; ++idx) {
 
-        image.data()[idx] = (image.data()[idx] <= threshold) ? 0 : 255;
+        dst.data()[idx] = (src.data()[idx] <= threshold) ? 0 : 255;
     }
 }
 
-void mdetect_transform::dilate_13x13(const Image& src_image, Image& dst_image) {
+void mdetect_transform::dilate(Image& dst, const Image& src, const uint8_t struct_elem_size) noexcept {
 
-    auto postprocess = [](int x) -> uint8_t { return !x ? 0 : 255; };
-    flat_13x13_kernel.convolve(src_image, 1, 1, postprocess, dst_image);
+    const Kernel<int> dilate_kernel(
+        1,                     // single (repeating) element
+        struct_elem_size,      // height in px
+        struct_elem_size,      // width in px
+        struct_elem_size / 2,  // anchor X-coordinate
+        struct_elem_size / 2,  // anchor Y-coordinate
+        1,                     // stride in X direction
+        1,                     // stride in Y direction
+        [](int x) noexcept -> uint8_t { return !x ? 0 : 255; }  // dilation-specific postprocessing
+    );
+
+    dilate_kernel.convolve(dst, src);
 }
