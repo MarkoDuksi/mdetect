@@ -35,8 +35,8 @@
 		],
 		"makefile.launchConfigurations": [
 			{
-				"cwd": "/home/dule/Wrk/C++/Images/",
-				"binaryPath": "/home/dule/Wrk/C++/Images/bin/debug/main.out",
+				"cwd": "/home/dule/Wrk/C++/mdetect/",
+				"binaryPath": "/home/dule/Wrk/C++/mdetect/bin/debug/main.out",
 				"binaryArgs": [
 					"test_imgs/input",
 					"test_imgs/output"

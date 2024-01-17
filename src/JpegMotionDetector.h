@@ -9,6 +9,16 @@
 #include "CoreMotionDetector.h"
 
 
+/// \brief A user-friendly interface to CoreMotionDetector for use with JPEG compressed images.
+///
+/// \tparam FRAME_WIDTH       Width of internal frame buffer in pixels.
+/// \tparam FRAME_HEIGHT      Height of internal frame buffer in pixels.
+/// \tparam GRANULARITY       Level of detail for movements mask. Determines the
+///                           minimum distance separating distinct submasks, as
+///                           well as the padding around them.
+/// \tparam MAX_BBOXES_COUNT  The maximum number of bounding boxes to store.
+///
+/// Uses a fixed-size internal frame buffer for storing a reference frame.
 template<uint16_t FRAME_WIDTH,
          uint16_t FRAME_HEIGHT,
          uint8_t GRANULARITY = 1 + std::min(FRAME_WIDTH, FRAME_HEIGHT) / 8,
@@ -17,18 +27,50 @@ class JpegMotionDetector : public CoreMotionDetector<MAX_BBOXES_COUNT> {
 
     public:
 
+        /// \param decoder  A JpegDecoder instance to use for decompressing images.
+        ///
+        /// Decoder instance injected here is used by set_reference() and detect().
         explicit JpegMotionDetector(JpegDecoder& decoder) noexcept :
             m_decoder(&decoder)
             {}
 
+        /// \brief Sets internal reference raw buffer from the JPEG image.
+        ///
+        /// \param ref_buff  Memory block containing JFIF-compressed data of the
+        ///                  image to be used as reference frame for motion
+        ///                  detection.
+        /// \param size      Size of the memory block in bytes.
+        /// \retval          true on success.
+        /// \retval          false otherwise.
+        ///
+        /// The last frame processed remains assigned to injected decoder until
+        /// the next call to set_reference() or detect().
         bool set_reference(const uint8_t* const ref_buff, const size_t size) noexcept {
 
             return decode_jpeg(m_ref_raw_buff, ref_buff, size);
         }
 
+        /// \brief Customization of CoreMotionDetector::detect().
+        ///
+        /// \param frame_buff  Memory block containing JFIF-compressed data of
+        ///                    the image to detect motion in (with respect to
+        ///                    reference frame).
+        /// \param size        Size of the memory block in bytes.
+        /// \param threshold   Minimum absolute value for a change in pixel
+        ///                    intensity (with respect to reference frame) to be
+        ///                    considered as due to movement.
+        /// \return            Total count of movement regions detected. If
+        ///                    decompressing the image was not successful,
+        ///                    returns \c -1.
+        ///
+        /// Manages JPEG decompression of the input image and all the buffer
+        /// requirements of CoreMotionDetector::detect() by creating them on its
+        /// own stack. Memory is reused as much as possible. The last frame
+        /// processed remains assigned to injected decoder until the next call
+        /// to set_reference() or detect().
         int detect(const uint8_t* const frame_buff, const size_t size, const uint8_t threshold = 127) noexcept {
 
-            // NOTE THE DETAILS BELOW:
+            // NOTE:
             //  - at one point, "content" of `scratchpad1` will be dilated into `scratchpad2`
             //  - dilation operations *cannot* be done in place
             //  - the pointers would, normally, point to two separate, non-overlapping buffers
@@ -47,7 +89,7 @@ class JpegMotionDetector : public CoreMotionDetector<MAX_BBOXES_COUNT> {
 
             // `scratchpad1` is used for:
             //  1) current frame pixel data
-            //  2) element-wise abosolute difference of 1) and reference frame pixel data
+            //  2) element-wise absolute difference of 1) and reference frame pixel data
             //  3) in place thresholded 2)
             uint8_t* const scratchpad1 = &joint_buffer[offset];
 
@@ -75,11 +117,18 @@ class JpegMotionDetector : public CoreMotionDetector<MAX_BBOXES_COUNT> {
                                                                 GRANULARITY);
         }
 
+        /// \brief Forwards to CoreMotionDetector::get_bounding_box().
+        BoundingBox get_bounding_box() noexcept {
+
+            return CoreMotionDetector<MAX_BBOXES_COUNT>::get_bounding_box();
+        }
+
     private:
 
         JpegDecoder* const m_decoder {nullptr};
         uint8_t m_ref_raw_buff[FRAME_WIDTH * FRAME_HEIGHT] {};
 
+        // decompresses a JPEG image with downscaling if necessary
         bool decode_jpeg(uint8_t* const raw_buff, const uint8_t* const jpeg_buff, const size_t size) noexcept {
 
             if (!m_decoder->assign(jpeg_buff, size)) {

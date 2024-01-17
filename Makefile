@@ -6,6 +6,7 @@ OBJ_DIR = obj
 BIN_DIR = bin
 DEP_DIR = .deps
 TESTS_DIR = test_imgs
+DOXY_TREE = doc/doxy*
 
 CXX = g++
 CXX_FLAGS = -std=c++17 -fdiagnostics-color=always -pedantic -Wall -Wextra -Wunreachable-code -Wfatal-errors
@@ -71,6 +72,14 @@ $(DEBUG_BIN_DIR) $(RELEASE_BIN_DIR):
 	mkdir -p $@
 
 
+.PHONY: doxy
+doxy: clean-doxy
+	doxygen
+
+.PHONY: clean
+clean: clean-tests clean-doxy
+	rm -rf $(OBJ_DIR) $(BIN_DIR) $(DEP_DIR)
+
 .PHONY: clean-debug
 clean-debug:
 	rm -rf $(DEBUG_OBJ_DIR) $(DEBUG_BIN_DIR) $(addsuffix /*debug.d, $(DEP_TREE))
@@ -90,9 +99,9 @@ clean-tests:
 	find $(TESTS_DIR) -type f -name '*.pgm' ! -regex '.+_ref\/.+' -delete
 	find $(TESTS_DIR) -type d -empty -delete
 
-.PHONY: clean
-clean: clean-tests
-	rm -rf $(OBJ_DIR) $(BIN_DIR) $(DEP_DIR)
+.PHONY: clean-doxy
+clean-doxy:
+	rm -rf $(DOXY_TREE)
 
 
 $(DEPS):

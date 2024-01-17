@@ -12,18 +12,15 @@
 #include "transform.h"
 
 
-union LabeledBBox {
-
-    BoundingBox bbox {};
-
-    struct {
-
-        uint16_t _padding;
-        uint16_t root_label;
-        uint16_t is_root_node;
-    } merge_rec;
-};
-
+/// \brief Low-level motion detection class.
+///
+/// \tparam MAX_BBOXES_COUNT  The maximum number of bounding boxes to store.
+///
+/// Implements low-level motion detection functionality based on inter-frame
+/// comparison. Because its interface is highly parametrized it is not intended
+/// for end-users but rather provided for customization by inheriting subclasses
+/// (i.e. JpegMotionDetector). Uses a fixed-size internal storage for bounding
+/// boxes for detected movements.
 template <uint8_t MAX_BBOXES_COUNT>
 class CoreMotionDetector {
 
@@ -36,19 +33,50 @@ class CoreMotionDetector {
         CoreMotionDetector(CoreMotionDetector&& other) = delete;
         CoreMotionDetector& operator=(CoreMotionDetector&& other) = delete;
 
-        uint detect(uint8_t* const curr_frame_buff,
-                    uint8_t* const ref_frame_buff,
+    protected:
+
+        /// \brief Compares two frame buffers and detects movement regions between them.
+        ///
+        /// \param image1_frame_buff     Frame buffer of the first image (of size `frame_width * frame_height` bytes).
+        /// \param image2_frame_buff     Frame buffer of the second image (of size `frame_width * frame_height` bytes).
+        /// \param aux1_frame_buff       First auxiliary frame buffer (of size `frame_width * frame_height` bytes). Can alias one of the above.
+        /// \param aux2_frame_buff       Second auxiliary frame buffer (of size `frame_width * frame_height` bytes).
+        /// \param bbox_buff             A buffer needed in computing the bounding boxes.
+        /// \param bbox_buff_size        Size of the `bbox_buff` in bytes.
+        /// \param frame_width           Width of the image frame in pixels.
+        /// \param frame_height          Height of the image frame in pixels.
+        /// \param threshold             Minimum absolute value for a change in pixel intensity between frames to be considered as due to movement.
+        /// \param granularity           Level of detail for movements mask. Determines the minimum distance separating distinct submasks, as well as the padding around them.
+        /// \return                      Total count of movement regions detected.
+        ///
+        /// Detected regions are internally stored as bounding boxes which can
+        /// be retrieved by calling get_bounding_box(). Calling detect() resets
+        /// any previously stored bounding boxes.
+        ///
+        /// \par Choosing the size for \c bbox_buff
+        /// A temporary storage for bounding boxes (at 8 bytes per bounding box)
+        /// is needed for detection. At most 256 bounding boxes can be used
+        /// which amounts to 2048 bytes + alignment provisions (max 8 bytes).
+        /// The rest, if provided, cannot be used. However, much less than that
+        /// is normally needed. The simplest recommendation is to just reuse the
+        /// `aux1_frame_buff` or otherwise (advanced, see implementation of
+        /// JpegMotionDetector::detect) just the part of it not reused by
+        /// `aux2_frame_buff`. If detected movement regions seem excessively
+        /// detailed or incomplete, increase the buffer size and/or
+        /// \c granularity.
+        uint detect(uint8_t* const image1_frame_buff,
+                    uint8_t* const image2_frame_buff,
                     uint8_t* const aux1_frame_buff,
                     uint8_t* const aux2_frame_buff,
-                    uint8_t* const joint_bbox_buff,
-                    const size_t   joint_bbox_buff_size,
+                    uint8_t* const bbox_buff,
+                    const size_t   bbox_buff_size,
                     const uint16_t frame_width,
                     const uint16_t frame_height,
                     const uint8_t  threshold,
                     const uint8_t  granularity) noexcept {
 
-            const Image curr_img(curr_frame_buff, frame_width, frame_height);
-            const Image ref_img(ref_frame_buff, frame_width, frame_height);
+            const Image curr_img(image1_frame_buff, frame_width, frame_height);
+            const Image ref_img(image2_frame_buff, frame_width, frame_height);
             Image aux1_img(aux1_frame_buff, frame_width, frame_height);
             Image aux2_img(aux2_frame_buff, frame_width, frame_height);
 
@@ -61,8 +89,8 @@ class CoreMotionDetector {
             // dilate with square block of size `granularity` x `granularity`
             mdetect_transform::dilate(aux2_img, aux1_img, granularity);
 
-            // set individual buffers from joint bounding boxes buffer
-            const uint capacity = set_bbox_buffers(joint_bbox_buff, joint_bbox_buff_size);
+            // set temporary bounding box buffer
+            const uint capacity = set_bbox_buffer(bbox_buff, bbox_buff_size);
 
             // set default img value for probing beyond its boundaries
             const uint8_t padding_value = 0;
@@ -70,7 +98,7 @@ class CoreMotionDetector {
             // labeling of areas with detected "movements" starts with 1
             uint next_label = 1;
 
-            // fit a tight bounding box around each "movement" area
+            // fit a tight (after dilation) bounding box around each "movement" area
             // (boxed connected components)
             for (int row = 0; (row < aux2_img.height) && next_label < capacity; ++row) {
 
@@ -129,7 +157,7 @@ class CoreMotionDetector {
                             m_bboxes[N_label].bbox.merge(BoundingBox(col, row));
                         }
 
-                        // else both W and N neighbours are zero -> create new bounding box
+                        // else both W and N neighbors are zero -> create new bounding box
                         else {
 
                             // define a new bounding box for the current pixel
@@ -153,6 +181,12 @@ class CoreMotionDetector {
             return m_stored_bbox_count;
         }
 
+        /// \brief Retrieves the next bounding box from store
+        ///
+        /// \return  A bounding box around the next detected movement or a null-box after the last one.
+        ///
+        /// If no movements are detected, always returns a null-box.
+        /// Otherwise, after the sentinel, restarts with the first box.
         BoundingBox get_bounding_box() noexcept {
 
             BoundingBox next_bbox;
@@ -170,32 +204,29 @@ class CoreMotionDetector {
             return next_bbox;
         }
 
-    protected:
+    private:
 
-        LabeledBBox* m_bboxes {nullptr};
-        uint8_t m_next_bbox_idx {};
-        uint8_t m_stored_bbox_count {};
-        BoundingBox m_bboxes_buff[MAX_BBOXES_COUNT] {};
+        // sets `m_bboxes` to correctly aligned address within provided buffer
+        // returns the capacity in number of elements
+        uint set_bbox_buffer(uint8_t* bbox_buff, size_t bbox_buff_size) noexcept {
 
-        uint set_bbox_buffers(uint8_t* joint_bbox_buff, size_t joint_bbox_buff_size) noexcept {
-
-            // amount of bytes by which `joint_bbox_buff` is missaligned for storing `LabeledBBox` type
-            const size_t missalignment = reinterpret_cast<uintptr_t>(joint_bbox_buff) % alignof(LabeledBBox);
+            // amount of bytes by which `bbox_buff` is misaligned for storing `LabeledBBox` type
+            const size_t misalignment = reinterpret_cast<uintptr_t>(bbox_buff) % alignof(LabeledBBox);
 
             // aligned buffer capacity in terms of max allowed number of elements
-            const uint aligned_capacity = (joint_bbox_buff_size - missalignment) / sizeof(LabeledBBox);
+            const uint aligned_capacity = (bbox_buff_size - misalignment) / sizeof(LabeledBBox);
 
             // NOTE THE DETAILS BELOW:
             //   - useful capacity *cannot* exceed 256 elements by design (256 * 8 = 2048 bytes)
-            //   - more memory than that, even if available through `joint_bbox_buff`, is not used
-            //   - the limit is not arbitrary, it is the result of reusing image framebuffer which,
+            //   - more memory than that, even if available through `bbox_buff`, is not used
+            //   - the limit is not arbitrary, it is the result of reusing image frame buffer which,
             //     being of type `uint8_t`, can differentiate between at most 256 labels
             //   - nevertheless, the typical use case (example) does not need more than 20 (160 bytes)
             const uint useful_capacity = std::min(256U, aligned_capacity);
 
             // alignment obvious to the compiler
-            void* aligned_buff = reinterpret_cast<void*>(joint_bbox_buff);
-            if(!std::align(alignof(LabeledBBox), useful_capacity, aligned_buff, joint_bbox_buff_size)) {
+            void* aligned_buff = reinterpret_cast<void*>(bbox_buff);
+            if(!std::align(alignof(LabeledBBox), useful_capacity, aligned_buff, bbox_buff_size)) {
 
                 return 0;
             }
@@ -214,6 +245,8 @@ class CoreMotionDetector {
             return useful_capacity;
         }
 
+        // internally stores valid bounding boxes from temporary buffer for
+        // subsequent retrieval by `get_bounding_box`
         virtual uint store_valid_bboxes(uint higher_bound) noexcept {
 
             uint dst_idx = 0;
@@ -228,4 +261,25 @@ class CoreMotionDetector {
 
             return dst_idx;
         }
+
+        // bounding box tagged with a merge record used by `detect` to track the
+        // growing bounding boxes
+        union LabeledBBox {
+
+            BoundingBox bbox {};
+
+            struct {
+
+                uint16_t _padding;
+                uint16_t root_label;
+                uint16_t is_root_node;
+            } merge_rec;
+        };
+
+    protected:
+
+        LabeledBBox* m_bboxes {nullptr};
+        uint8_t m_next_bbox_idx {};
+        uint8_t m_stored_bbox_count {};
+        BoundingBox m_bboxes_buff[MAX_BBOXES_COUNT] {};
 };

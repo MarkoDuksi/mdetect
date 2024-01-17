@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
     auto input_path_it = input_paths.begin();
 
 
-    // `input_paths` is purposely not indefinite; real stream would use `while (true)` here
+    // `input_paths` is purposely not indefinite; real stream would be
     while (input_path_it != input_paths.end()) {
 
         // read compressed data from an input image into `buffer` of size `size`
@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
     
 
     // process the rest of input images
-    // `input_paths` is purposely not indefinite; real stream would use `while (true)` here
+    // `input_paths` is purposely not indefinite; real stream would be
     while (input_path_it != input_paths.end()) {
 
         std::cout << "processing image: " << *input_path_it << "\n";
@@ -125,7 +125,7 @@ int main(int argc, char** argv) {
         // not interested in very small bounding boxes (optional filter-out)
         const uint min_bbox_size = 16;
 
-        // not interested in bounding boxes larger than half of the frame (optional filter-out)
+        // not interested in bounding boxes larger than half of frame height (optional filter-out)
         const uint max_bbox_size = downscaled_height / 2;
 
         // set boundaries for extending non-square bounding boxes into squares

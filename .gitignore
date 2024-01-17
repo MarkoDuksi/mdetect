@@ -3,3 +3,4 @@ obj
 bin
 *.pgm
 *.nogit
+doc/doxy*
