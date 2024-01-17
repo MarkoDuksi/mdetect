@@ -8,17 +8,23 @@
 
 void mdetect_transform::absdiff(Image &dst, const Image &src1, const Image &src2) noexcept {
 
-    for (uint32_t idx = 0; idx < dst.width * dst.height; ++idx) {
+    for (uint16_t row = 0; row < dst.height; ++row) {
 
-        dst.data()[idx] = std::abs(src1.data()[idx] - src2.data()[idx]);
+        for (uint16_t col = 0; col < dst.width; ++col) {
+
+            dst.at(row, col) = std::abs(src1.at(row, col) - src2.at(row, col));
+        }
     }
 }
 
-void mdetect_transform::threshold(Image& dst, const Image& src, const uint8_t threshold) noexcept {
+void mdetect_transform::threshold(Image& dst, const Image& src, const uint8_t thresh_val) noexcept {
 
-    for (uint32_t idx = 0; idx < dst.width * dst.height; ++idx) {
+    for (uint16_t row = 0; row < dst.height; ++row) {
 
-        dst.data()[idx] = (src.data()[idx] <= threshold) ? 0 : 255;
+        for (uint16_t col = 0; col < dst.width; ++col) {
+
+            dst.at(row, col) = (src.at(row, col) <= thresh_val) ? 0 : 255;
+        }
     }
 }
 

@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
         // read compressed data from an input image into `buffer` of size `size`
         // (for testing/example purposes the data buffer is allocated on the heap here)
         const auto [buffer, size] = mdjpeg_test_utils::read_raw_jpeg_from_file(*input_path_it++);
-        
+
         // set initial reference frame
         const bool reference_success = motion_detector.set_reference(buffer, size);
 
@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
             break;
         }
     }
-    
+
 
     // process the rest of input images
     // `input_paths` is purposely not indefinite; real stream would be
@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
 
         // set boundaries for extending non-square bounding boxes into squares
         const BoundingBox frame_boundaries(0, 0, downscaled_width, downscaled_height);
-        
+
         // process individual "movements" one by one
         uint movement_counter = 0;
         while (auto bbox = motion_detector.get_bounding_box()) {
