@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    std::filesystem::path input_dir = argv[1];
+    const std::filesystem::path input_dir = argv[1];
 
     // for testing/example purposes input image data is obtained from files within `input_dir`
     if (!std::filesystem::is_directory(input_dir)) {
@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
     }
 
     // for testing/example purposes output image data is stored to files in `output_dir`
-    std::filesystem::path output_dir = argv[2];
+    const std::filesystem::path output_dir = argv[2];
     std::filesystem::create_directories(output_dir);
 
 
