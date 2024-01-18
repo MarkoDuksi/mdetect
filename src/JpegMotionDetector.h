@@ -9,6 +9,8 @@
 #include "CoreMotionDetector.h"
 
 
+namespace mdetect {
+
 /// \brief A user-friendly interface to CoreMotionDetector for use with JPEG compressed images.
 ///
 /// \tparam FRAME_WIDTH       Width of internal frame buffer in pixels.
@@ -27,10 +29,10 @@ class JpegMotionDetector : public CoreMotionDetector<MAX_BBOXES_COUNT> {
 
     public:
 
-        /// \param decoder  A JpegDecoder instance to use for decompressing images.
+        /// \param decoder  An mdjpeg::JpegDecoder instance to use for decompressing images.
         ///
         /// Decoder instance injected here is used by set_reference() and detect().
-        explicit JpegMotionDetector(JpegDecoder& decoder) noexcept :
+        explicit JpegMotionDetector(mdjpeg::JpegDecoder& decoder) noexcept :
             m_decoder(&decoder)
             {}
 
@@ -76,7 +78,7 @@ class JpegMotionDetector : public CoreMotionDetector<MAX_BBOXES_COUNT> {
             //  - the pointers would, normally, point to two separate, non-overlapping buffers
             //  - however, in this implementation the two buffers overlap(!) by design
             //  - this approach uses less memory and in a more cache friendly manner
-            
+
             // to prevent read-write aliasing, set the smallest required pointer offset for
             // the greatest allowable buffer overlap
             constexpr uint offset = FRAME_WIDTH * (GRANULARITY / 2 + 1);
@@ -118,14 +120,14 @@ class JpegMotionDetector : public CoreMotionDetector<MAX_BBOXES_COUNT> {
         }
 
         /// \brief Forwards to CoreMotionDetector::get_bounding_box().
-        BoundingBox get_bounding_box() noexcept {
+        mdjpeg::BoundingBox get_bounding_box() noexcept {
 
             return CoreMotionDetector<MAX_BBOXES_COUNT>::get_bounding_box();
         }
 
     private:
 
-        JpegDecoder* const m_decoder {nullptr};
+        mdjpeg::JpegDecoder* const m_decoder {nullptr};
         uint8_t m_ref_raw_buff[FRAME_WIDTH * FRAME_HEIGHT] {};
 
         // decompresses a JPEG image with downscaling if necessary
@@ -148,8 +150,10 @@ class JpegMotionDetector : public CoreMotionDetector<MAX_BBOXES_COUNT> {
             }
 
             // generic downscaling factor
-            DownscalingBlockWriter<FRAME_WIDTH, FRAME_HEIGHT> downscaling_block_writer;
+            mdjpeg::DownscalingBlockWriter<FRAME_WIDTH, FRAME_HEIGHT> downscaling_block_writer;
 
             return m_decoder->luma_decode(raw_buff, {0, 0, FRAME_WIDTH, FRAME_HEIGHT}, downscaling_block_writer);
         }
 };
+
+}  // namespace mdetect

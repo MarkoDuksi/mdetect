@@ -28,7 +28,33 @@
 			"string": "cpp",
 			"unordered_map": "cpp",
 			"algorithm": "cpp",
-			"iostream": "cpp"
+			"iostream": "cpp",
+			"chrono": "cpp",
+			"compare": "cpp",
+			"exception": "cpp",
+			"iterator": "cpp",
+			"memory_resource": "cpp",
+			"random": "cpp",
+			"initializer_list": "cpp",
+			"new": "cpp",
+			"ostream": "cpp",
+			"sstream": "cpp",
+			"stdexcept": "cpp",
+			"streambuf": "cpp",
+			"thread": "cpp",
+			"type_traits": "cpp",
+			"typeinfo": "cpp",
+			"bitset": "cpp",
+			"__bit_reference": "cpp",
+			"__debug": "cpp",
+			"__functional_03": "cpp",
+			"__hash_table": "cpp",
+			"__node_handle": "cpp",
+			"__split_buffer": "cpp",
+			"__threading_support": "cpp",
+			"ios": "cpp",
+			"limits": "cpp",
+			"ratio": "cpp"
 		},
 		"C_Cpp.default.includePath": [
 			"include"
@@ -43,6 +69,11 @@
 				]
 			}
 		],
-		"makefile.phonyOnlyTargets": true
+		"makefile.phonyOnlyTargets": true,
+		"cSpell.words": [
+			"absdiff",
+			"BBOXES",
+			"mdetect"
+		]
 	}
 }

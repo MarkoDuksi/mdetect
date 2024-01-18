@@ -5,6 +5,8 @@
 #include "Image.h"
 
 
+namespace mdetect {
+
 /// \brief Lightweight static storage class with Image functionalities.
 ///
 /// \tparam IMG_WIDTH   Image width in pixels.
@@ -24,3 +26,5 @@ class StaticImage : public Image {
 
         uint8_t m_internal_buff[IMG_WIDTH * IMG_HEIGHT] {};
 };
+
+}  // namespace mdetect

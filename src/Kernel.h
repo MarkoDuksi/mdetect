@@ -5,6 +5,8 @@
 #include "Image.h"
 
 
+namespace mdetect {
+
 /// \brief Class for performing kernel convolutions with images.
 ///
 /// \tparam T  Type used for kernel elements and accumulator buffer.
@@ -13,7 +15,6 @@
 /// values such that the accumulator buffer of that type does not overflow
 /// during multiply-accumulate with image having all pixel values set to
 /// \c UINT8_MAX.
-
 template<typename T>
 class Kernel {
 
@@ -145,3 +146,5 @@ class Kernel {
             return accumulator;
         }
 };
+
+}  // namespace mdetect

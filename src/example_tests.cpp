@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
     }
 
     // get only the paths for filenames matching "`input_dir`/*.jpg"
-    const auto input_paths = mdjpeg_test_utils::get_input_img_paths(input_dir);
+    const auto input_paths = mdjpeg::test_utils::get_input_img_paths(input_dir);
 
     // motion detection can only find "movements" between multiple frames
     if (input_paths.size() < 2) {
@@ -59,15 +59,15 @@ int main(int argc, char** argv) {
     uint8_t dest_buff[dest_width * dest_height];
 
     // `downscaling_block_writer` needed for writing oversized input to fixed-sized `dest_buff`
-    DownscalingBlockWriter<dest_width, dest_height> downscaling_block_writer;
+    mdjpeg::DownscalingBlockWriter<dest_width, dest_height> downscaling_block_writer;
 
     // a single JPEG decoder object used by motion detector as well as `main`
-    JpegDecoder jpeg_decoder;
+    mdjpeg::JpegDecoder jpeg_decoder;
 
     // create `motion_detector` that internally operates with frame resolution of
     // `downscaled_width` x `downscaled_height` pixels
     // (using 1:8 scale is recommended for noise reduction and maximum efficiency)
-    JpegMotionDetector<downscaled_width, downscaled_height> motion_detector(jpeg_decoder);
+    mdetect::JpegMotionDetector<downscaled_width, downscaled_height> motion_detector(jpeg_decoder);
 
     // `input_paths` is used to mock a steady stream of images coming from a camera
     auto input_path_it = input_paths.begin();
@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
 
         // read compressed data from an input image into `buffer` of size `size`
         // (for testing/example purposes the data buffer is allocated on the heap here)
-        const auto [buffer, size] = mdjpeg_test_utils::read_raw_jpeg_from_file(*input_path_it++);
+        const auto [buffer, size] = mdjpeg::test_utils::read_raw_jpeg_from_file(*input_path_it++);
 
         // set initial reference frame
         const bool reference_success = motion_detector.set_reference(buffer, size);
@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
 
         // read compressed data from an input image into `buffer` of size `size`
         // (for testing/example purposes the data buffer is allocated on the heap here)
-        const auto [buffer, size] = mdjpeg_test_utils::read_raw_jpeg_from_file(*input_path_it);
+        const auto [buffer, size] = mdjpeg::test_utils::read_raw_jpeg_from_file(*input_path_it);
 
         // detect "movements" in the current frame with respect to the reference frame
         const uint8_t detection_threshold = 127;
@@ -129,7 +129,7 @@ int main(int argc, char** argv) {
         const uint max_bbox_size = downscaled_height / 2;
 
         // set boundaries for extending non-square bounding boxes into squares
-        const BoundingBox frame_boundaries(0, 0, downscaled_width, downscaled_height);
+        const mdjpeg::BoundingBox frame_boundaries(0, 0, downscaled_width, downscaled_height);
 
         // process individual "movements" one by one
         uint movement_counter = 0;
@@ -151,7 +151,7 @@ int main(int argc, char** argv) {
             // (for testing/example purposes just write it to disk)
             std::filesystem::path output_path = output_dir / input_path_it->stem();
             output_path += "_" + std::to_string(movement_counter++) + ".pgm";
-            mdjpeg_test_utils::write_as_pgm(output_path, dest_buff, dest_width, dest_height);
+            mdjpeg::test_utils::write_as_pgm(output_path, dest_buff, dest_width, dest_height);
         }
 
         // update reference frame using the current input image

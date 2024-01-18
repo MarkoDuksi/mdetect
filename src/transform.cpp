@@ -6,7 +6,9 @@
 #include "Image.h"
 
 
-void mdetect_transform::absdiff(Image &dst, const Image &src1, const Image &src2) noexcept {
+using namespace mdetect;
+
+void transform::absdiff(Image &dst, const Image &src1, const Image &src2) noexcept {
 
     for (uint16_t row = 0; row < dst.height; ++row) {
 
@@ -17,7 +19,7 @@ void mdetect_transform::absdiff(Image &dst, const Image &src1, const Image &src2
     }
 }
 
-void mdetect_transform::threshold(Image& dst, const Image& src, const uint8_t thresh_val) noexcept {
+void transform::threshold(Image& dst, const Image& src, const uint8_t thresh_val) noexcept {
 
     for (uint16_t row = 0; row < dst.height; ++row) {
 
@@ -28,7 +30,7 @@ void mdetect_transform::threshold(Image& dst, const Image& src, const uint8_t th
     }
 }
 
-void mdetect_transform::dilate(Image& dst, const Image& src, const uint8_t struct_elem_size) noexcept {
+void transform::dilate(Image& dst, const Image& src, const uint8_t struct_elem_size) noexcept {
 
     const Kernel<int> dilate_kernel(
         1,                     // single (repeating) element

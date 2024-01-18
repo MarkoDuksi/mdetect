@@ -12,6 +12,8 @@
 #include "transform.h"
 
 
+namespace mdetect {
+
 /// \brief Low-level motion detection class.
 ///
 /// \tparam MAX_BBOXES_COUNT  The maximum number of bounding boxes to store.
@@ -81,13 +83,13 @@ class CoreMotionDetector {
             Image aux2_img(aux2_frame_buff, frame_width, frame_height);
 
             // calculate pixel-wise absolute difference between frames
-            mdetect_transform::absdiff(aux1_img, curr_img, ref_img);
+            mdetect::transform::absdiff(aux1_img, curr_img, ref_img);
 
             // posterize to 1-bit using custom threshold value
-            mdetect_transform::threshold(aux1_img, aux1_img, threshold);
+            mdetect::transform::threshold(aux1_img, aux1_img, threshold);
 
             // dilate with square block of size `granularity` x `granularity`
-            mdetect_transform::dilate(aux2_img, aux1_img, granularity);
+            mdetect::transform::dilate(aux2_img, aux1_img, granularity);
 
             // set temporary bounding box buffer
             const uint capacity = set_bbox_buffer(bbox_buff, bbox_buff_size);
@@ -143,7 +145,7 @@ class CoreMotionDetector {
                                 aux2_img.at(row, col) = W_label;
 
                                 // grow W label bounding box over the current pixel
-                                m_bboxes[W_label].bbox.merge(BoundingBox(col, row));
+                                m_bboxes[W_label].bbox.merge(mdjpeg::BoundingBox(col, row));
                             }
                         }
 
@@ -154,14 +156,14 @@ class CoreMotionDetector {
                             aux2_img.at(row, col) = N_label;
 
                             // grow N label bounding box over the current pixel
-                            m_bboxes[N_label].bbox.merge(BoundingBox(col, row));
+                            m_bboxes[N_label].bbox.merge(mdjpeg::BoundingBox(col, row));
                         }
 
                         // else both W and N neighbors are zero -> create new bounding box
                         else {
 
                             // define a new bounding box for the current pixel
-                            m_bboxes[next_label].bbox = BoundingBox(col, row);
+                            m_bboxes[next_label].bbox = mdjpeg::BoundingBox(col, row);
 
                             // assign a new label to the current pixel
                             aux2_img.at(row, col) = next_label;
@@ -187,9 +189,9 @@ class CoreMotionDetector {
         ///
         /// If no movements are detected, always returns a null-box.
         /// Otherwise, after the sentinel, restarts with the first box.
-        BoundingBox get_bounding_box() noexcept {
+        mdjpeg::BoundingBox get_bounding_box() noexcept {
 
-            BoundingBox next_bbox;
+            mdjpeg::BoundingBox next_bbox;
 
             if (m_next_bbox_idx < m_stored_bbox_count) {
 
@@ -266,7 +268,7 @@ class CoreMotionDetector {
         // growing bounding boxes
         union LabeledBBox {
 
-            BoundingBox bbox {};
+            mdjpeg::BoundingBox bbox {};
 
             struct {
 
@@ -281,5 +283,7 @@ class CoreMotionDetector {
         LabeledBBox* m_bboxes {nullptr};
         uint8_t m_next_bbox_idx {};
         uint8_t m_stored_bbox_count {};
-        BoundingBox m_bboxes_buff[MAX_BBOXES_COUNT] {};
+        mdjpeg::BoundingBox m_bboxes_buff[MAX_BBOXES_COUNT] {};
 };
+
+}  // namespace mdetect

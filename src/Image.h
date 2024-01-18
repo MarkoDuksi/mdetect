@@ -2,6 +2,9 @@
 
 #include <stdint.h>
 
+
+namespace mdetect {
+
 /// \brief Wrapper class around an 8-bit grayscale frame buffer.
 ///
 /// Keeps record of image width and height and provides ways for (row, col)
@@ -68,3 +71,5 @@ class Image {
                 m_data[row * width + col] : pad_value;
         }
 };
+
+}  // namespace mdetect
